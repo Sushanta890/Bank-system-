@@ -1,22 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Registration Form Demo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <title>HTML</title>
-  
-  <!-- HTML -->
-  
-
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="style.css">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+}
+.container {
+    width: 95%;
+    max-width: 420px;
+    background: #fff;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+}
+h2 { text-align: center; }
+input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+}
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover { background: #0056b3; }
+.step { display: none; }
+.step.active { display: block; }
+img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin-top: 10px;
+    object-fit: cover;
+}
+#aadhaarCard {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 15px;
+}
+</style>
 </head>
 
 <body>
-  <p>Nothing to see here...</p>
-  <!-- Project -->
-  <script src="main.js"></script>
+
+<div class="container">
+<h2>Registration</h2>
+
+<!-- STEP 1 MOBILE -->
+<div class="step active" id="step1">
+    <input type="tel" id="mobile" placeholder="Enter Mobile Number">
+    <button onclick="sendOTP()">Send OTP</button>
+</div>
+
+<!-- STEP 2 OTP -->
+<div class="step" id="step2">
+    <p>OTP Sent: <b id="showOTP"></b></p>
+    <input type="number" id="otpInput" placeholder="Enter OTP">
+    <button onclick="verifyOTP()">Verify OTP</button>
+</div>
+
+<!-- STEP 3 EMAIL -->
+<div class="step" id="step3">
+    <input type="email" id="email" placeholder="Enter Email ID">
+    <button onclick="nextStep(4)">Next</button>
+</div>
+
+<!-- STEP 4 PERSONAL -->
+<div class="step" id="step4">
+    <input id="fname" placeholder="First Name">
+    <input id="lname" placeholder="Last Name">
+    <input type="date" id="dob">
+    <select id="gender">
+        <option value="">Select Gender</option>
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+    <input type="file" accept="image/*" onchange="previewImage(event)">
+    <img id="preview">
+    <button onclick="nextStep(5)">Next</button>
+</div>
+
+<!-- STEP 5 ADDRESS -->
+<div class="step" id="step5">
+    <select id="state" onchange="loadDistrict()">
+        <option value="">Select State</option>
+        <option>Odisha</option>
+    </select>
+
+    <select id="district" onchange="loadCity()">
+        <option value="">Select District</option>
+    </select>
+
+    <select id="city">
+        <option value="">Select City</option>
+    </select>
+
+    <input id="village" placeholder="Village Name">
+    <button onclick="generateAadhaar()">Submit</button>
+</div>
+
+<!-- STEP 6 AADHAAR -->
+<div class="step" id="step6">
+    <div id="aadhaarCard">
+        <h3>Aadhaar Card (Demo)</h3>
+        <p id="cardName"></p>
+        <p id="cardDob"></p>
+        <p id="cardGender"></p>
+        <p><b id="aadhaarNumber"></b></p>
+        <div id="qrcode"></div>
+    </div>
+</div>
+
+</div>
+
+<script>
+let otp = "";
+let registeredMobiles = JSON.parse(localStorage.getItem("mobiles")) || [];
+
+function sendOTP() {
+    let mobile = document.getElementById("mobile").value;
+    if (registeredMobiles.includes(mobile)) {
+        alert("Mobile already registered!");
+        return;
+    }
+    otp = Math.floor(100000 + Math.random() * 900000);
+    document.getElementById("showOTP").innerText = otp;
+    nextStep(2);
+}
+
+function verifyOTP() {
+    if (document.getElementById("otpInput").value == otp) {
+        registeredMobiles.push(document.getElementById("mobile").value);
+        localStorage.setItem("mobiles", JSON.stringify(registeredMobiles));
+        nextStep(3);
+    } else {
+        alert("Invalid OTP");
+    }
+}
+
+function nextStep(n) {
+    document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+    document.getElementById("step" + n).classList.add("active");
+}
+
+function previewImage(e) {
+    document.getElementById("preview").src = URL.createObjectURL(e.target.files[0]);
+}
+
+function loadDistrict() {
+    let d = document.getElementById("district");
+    d.innerHTML = "<option>Rayagada</option><option>Ganjam</option>";
+}
+
+function loadCity() {
+    let c = document.getElementById("city");
+    c.innerHTML = "<option>Gunupur</option><option>Muniguda</option>";
+}
+
+function generateAadhaar() {
+    let aadhaar = "";
+    for (let i = 0; i < 12; i++) aadhaar += Math.floor(Math.random() * 10);
+    
+    document.getElementById("cardName").innerText =
+        document.getElementById("fname").value + " " +
+        document.getElementById("lname").value;
+
+    document.getElementById("cardDob").innerText =
+        "DOB: " + document.getElementById("dob").value;
+
+    document.getElementById("cardGender").innerText =
+        "Gender: " + document.getElementById("gender").value;
+
+    document.getElementById("aadhaarNumber").innerText = aadhaar;
+
+    new QRCode(document.getElementById("qrcode"), aadhaar);
+
+    let data = {
+        mobile: document.getElementById("mobile").value,
+        email: document.getElementById("email").value,
+        aadhaar: aadhaar
+    };
+    localStorage.setItem("userData", JSON.stringify(data));
+
+    nextStep(6);
+}
+</script>
+
 </body>
 </html>
