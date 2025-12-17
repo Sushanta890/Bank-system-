@@ -53,6 +53,13 @@ button{
     border-radius:8px;
     text-align:center;
 }
+img.preview{
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    margin-top: 8px;
+    object-fit: cover;
+}
 </style>
 </head>
 <body>
@@ -83,6 +90,29 @@ button{
         <option>Female</option>
         <option>Other</option>
     </select>
+    <input type="file" id="photo" accept="image/*" onchange="previewImage(event)">
+    <img id="preview" class="preview" src="" alt="Preview" style="display:none;">
+    <select id="state">
+        <option value="">Select State</option>
+        <option>Maharashtra</option>
+        <option>Kerala</option>
+        <option>Karnataka</option>
+        <option>Tamil Nadu</option>
+    </select>
+    <select id="district">
+        <option value="">Select District</option>
+        <option>Mumbai</option>
+        <option>Pune</option>
+        <option>Bangalore</option>
+        <option>Chennai</option>
+    </select>
+    <select id="city">
+        <option value="">Select City</option>
+        <option>City 1</option>
+        <option>City 2</option>
+        <option>City 3</option>
+    </select>
+    <input id="village" placeholder="Village/Locality">
     <button onclick="generateAadhaar()">Generate Aadhaar</button>
 </div>
 
@@ -97,6 +127,7 @@ button{
 // ===== GLOBALS =====
 let generatedOTP = "";
 let verifiedSIM = "";
+let photoData = "";
 
 // Show a step
 function showStep(n){
@@ -118,21 +149,14 @@ function sendOTP(){
         alert("Enter valid 10-digit S.K SIM number");
         return;
     }
-
-    // Check SIM exists
     const simDB = JSON.parse(localStorage.getItem("skSIM")) || [];
     if(!simDB.find(s=>s.simNumber===sim)){
         alert("❌ SIM number not registered");
         return;
     }
-
-    // Generate OTP
     generatedOTP = Math.floor(100000 + Math.random()*900000).toString();
     verifiedSIM = sim;
-
-    // Send OTP to chat system
     receiveAadhaarOTP(generatedOTP);
-
     alert("📩 OTP sent to your chat. Please open S.K SIM Chat to view it.");
     showStep(2);
 }
@@ -147,14 +171,30 @@ function verifyOTP(){
     showStep(3);
 }
 
+// STEP 3: Preview Image
+function previewImage(event){
+    const reader = new FileReader();
+    reader.onload = function(){
+        const output = document.getElementById('preview');
+        output.src = reader.result;
+        output.style.display = 'block';
+        photoData = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+
 // STEP 3: Generate Aadhaar
 function generateAadhaar(){
     const fname = document.getElementById("fname").value.trim();
     const lname = document.getElementById("lname").value.trim();
     const dob = document.getElementById("dob").value;
     const gender = document.getElementById("gender").value;
+    const state = document.getElementById("state").value;
+    const district = document.getElementById("district").value;
+    const city = document.getElementById("city").value;
+    const village = document.getElementById("village").value;
 
-    if(!fname || !lname || !dob || !gender){
+    if(!fname || !lname || !dob || !gender || !state || !district || !city || !village){
         alert("Please fill all fields");
         return;
     }
@@ -162,9 +202,8 @@ function generateAadhaar(){
     const aadhaarNumber = genAadhaar();
     const id4 = Math.floor(1000 + Math.random()*9000);
 
-    const data = {sim: verifiedSIM, fname, lname, dob, gender, aadhaar: aadhaarNumber, id: id4};
+    const data = {sim: verifiedSIM, fname, lname, dob, gender, state, district, city, village, aadhaar: aadhaarNumber, id: id4, photo: photoData};
 
-    // Save to DB
     const db = JSON.parse(localStorage.getItem("aadhaarDB")) || [];
     db.push(data);
     localStorage.setItem("aadhaarDB", JSON.stringify(db));
@@ -175,6 +214,11 @@ function generateAadhaar(){
             <small>SIM: ${verifiedSIM}</small><br>
             <div><b>Aadhaar:</b> ${aadhaarNumber}</div>
             <div><b>ID:</b> ${id4}</div>
+            <div><b>State:</b> ${state}</div>
+            <div><b>District:</b> ${district}</div>
+            <div><b>City:</b> ${city}</div>
+            <div><b>Village:</b> ${village}</div>
+            <img src="${photoData}" class="preview"><br>
             <div class="qr">${aadhaarNumber}</div>
             <small>✅ Aadhaar linked with S.K SIM successfully</small>
         </div>
@@ -190,7 +234,6 @@ function receiveAadhaarOTP(otp){
     const inbox = JSON.parse(localStorage.getItem(inboxKey)) || [];
     inbox.push(otpMsg);
     localStorage.setItem(inboxKey, JSON.stringify(inbox));
-    // update unread count if chat page open
     if(typeof unreadCount === "function") unreadCount();
 }
 </script>
