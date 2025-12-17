@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>S.K SIM Chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 :root{
     --bg:#0f2027;
@@ -48,27 +47,20 @@ button{
 }
 .nav button{flex:1}
 .box{padding:10px}
-
 .msg{
     max-width:75%;
     padding:10px;
     margin:6px 0;
     border-radius:10px;
     animation:fade .2s;
-    cursor:pointer;
 }
 .in{background:var(--card)}
 .out{background:var(--out);margin-left:auto}
-
-.selected{
-    outline:3px solid red;
-}
-
+.selected{outline:3px solid red}
 @keyframes fade{
     from{opacity:0;transform:translateY(10px)}
     to{opacity:1}
 }
-
 .chatBar{
     display:flex;
     gap:6px;
@@ -90,7 +82,6 @@ button{
 small{opacity:.7}
 </style>
 </head>
-
 <body>
 
 <div class="header">
@@ -124,11 +115,9 @@ let selectedType = null;
 /* ===== MODE ===== */
 let mode = localStorage.getItem("mode") || "dark";
 if(mode === "light") document.body.classList.add("light");
-
 function toggleMode(){
     document.body.classList.toggle("light");
-    localStorage.setItem("mode",
-        document.body.classList.contains("light") ? "light" : "dark");
+    localStorage.setItem("mode", document.body.classList.contains("light") ? "light" : "dark");
 }
 
 /* ===== LOGOUT ===== */
@@ -141,8 +130,8 @@ function logout(){
 function home(){
     content.innerHTML=`
         <b>Welcome to S.K SIM Chat</b><br><br>
-        💬 WhatsApp style chat<br>
-        🔔 Live notifications<br>
+        💬 Chat interface<br>
+        🔔 Receives OTP messages only from Aadhaar registration<br>
         🗑 Select & delete messages<br>
         🌙 Dark / Light mode
     `;
@@ -159,12 +148,10 @@ unreadCount();
 function chatList(){
     const inbox = JSON.parse(localStorage.getItem("inbox_"+mySIM))||[];
     content.innerHTML="<b>Chats</b><br>";
-
     if(!inbox.length){
         content.innerHTML += "<small>No messages</small>";
         return;
     }
-
     const unique = [...new Set(inbox.map(m=>m.from))];
     unique.forEach(sim=>{
         const d=document.createElement("div");
@@ -197,22 +184,22 @@ function openChat(sim){
 function loadChat(sim){
     const chat=document.getElementById("chat");
     chat.innerHTML="";
-
     const inbox=JSON.parse(localStorage.getItem("inbox_"+mySIM))||[];
     inbox.filter(m=>m.from===sim).forEach(m=>{
         chat.innerHTML+=`
             <div class="msg in"
                 onclick="selectMsg(this,'inbox','${m.id}')">
-                ${m.text}<br><small>${m.time}</small>
+                ${m.text}<br>
+                <small>${m.time}</small>
             </div>`;
     });
-
     const sent=JSON.parse(localStorage.getItem("sent_"+mySIM))||[];
     sent.filter(m=>m.to===sim).forEach(m=>{
         chat.innerHTML+=`
             <div class="msg out"
                 onclick="selectMsg(this,'sent','${m.id}')">
-                ${m.text}<br><small>${m.time}</small>
+                ${m.text}<br>
+                <small>${m.time}</small>
             </div>`;
     });
 }
@@ -229,33 +216,17 @@ function selectMsg(el,type,id){
 function send(to){
     const text=document.getElementById("msg").value.trim();
     if(!text) return;
-
     const time=new Date().toLocaleTimeString();
-
-    const inboxMsg={
-        id:crypto.randomUUID(),
-        from:mySIM,
-        text,
-        time
-    };
-
-    const sentMsg={
-        id:crypto.randomUUID(),
-        to,
-        text,
-        time
-    };
-
+    const inboxMsg={id:crypto.randomUUID(),from:mySIM,text,time};
+    const sentMsg={id:crypto.randomUUID(),to,text,time};
     const inboxKey="inbox_"+to;
     const inbox=JSON.parse(localStorage.getItem(inboxKey))||[];
     inbox.push(inboxMsg);
     localStorage.setItem(inboxKey,JSON.stringify(inbox));
-
     const sentKey="sent_"+mySIM;
     const sent=JSON.parse(localStorage.getItem(sentKey))||[];
     sent.push(sentMsg);
     localStorage.setItem(sentKey,JSON.stringify(sent));
-
     openChat(to);
 }
 
@@ -265,24 +236,35 @@ function deleteMsg(){
         alert("Select a message first");
         return;
     }
-
-    const key = selectedType==="inbox"
-        ? "inbox_"+mySIM
-        : "sent_"+mySIM;
-
+    const key = selectedType==="inbox" ? "inbox_"+mySIM : "sent_"+mySIM;
     let data=JSON.parse(localStorage.getItem(key))||[];
     data=data.filter(m=>m.id!==selectedMsg);
     localStorage.setItem(key,JSON.stringify(data));
-
     selectedMsg=null;
     selectedType=null;
-
     loadChat(currentChatSIM);
+}
+
+/* ===== OTP FROM AADHAAR REGISTRATION ===== */
+function receiveAadhaarOTP(otp){
+    const time = new Date().toLocaleTimeString();
+    const otpMsg = {
+        id: crypto.randomUUID(),
+        from: "S.K-SYSTEM",
+        text: `🔐 Your Aadhaar OTP is ${otp}`,
+        time
+    };
+    const inboxKey = "inbox_" + mySIM;
+    const inbox = JSON.parse(localStorage.getItem(inboxKey)) || [];
+    inbox.push(otpMsg);
+    localStorage.setItem(inboxKey, JSON.stringify(inbox));
+    unreadCount();
+    // auto-refresh chat if open
+    if(currentChatSIM==="S.K-SYSTEM") loadChat("S.K-SYSTEM");
 }
 
 /* ===== INIT ===== */
 home();
 </script>
-
 </body>
 </html>
