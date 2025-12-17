@@ -1,197 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Registration Form Demo</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIM Card Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f2f2f2;
-}
-.container {
-    width: 95%;
-    max-width: 420px;
-    background: #fff;
-    margin: 20px auto;
-    padding: 20px;
-    border-radius: 8px;
-}
-h2 { text-align: center; }
-input, select, button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-}
-button {
-    background: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-button:hover { background: #0056b3; }
-.step { display: none; }
-.step.active { display: block; }
-img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin-top: 10px;
-    object-fit: cover;
-}
-#aadhaarCard {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-top: 15px;
-}
-</style>
+    .card {
+      background: #fff;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      animation: slideUp 0.8s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #2a5298;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    button:hover {
+      background: #1e3c72;
+      transform: scale(1.03);
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 12px;
+      background: #f4f6fa;
+      border-radius: 10px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .barcode {
+      margin-top: 10px;
+      height: 60px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .bar {
+      width: 3px;
+      background: #000;
+      animation: grow 0.5s ease;
+    }
+
+    @keyframes grow {
+      from { height: 0; }
+      to { height: 100%; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="card">
+    <h2>SIM Card Activation</h2>
 
-<div class="container">
-<h2>Registration</h2>
+    <label>First Name</label>
+    <input id="firstName" required />
 
-<!-- STEP 1 MOBILE -->
-<div class="step active" id="step1">
-    <input type="tel" id="mobile" placeholder="Enter Mobile Number">
-    <button onclick="sendOTP()">Send OTP</button>
-</div>
+    <label>Last Name</label>
+    <input id="lastName" required />
 
-<!-- STEP 2 OTP -->
-<div class="step" id="step2">
-    <p>OTP Sent: <b id="showOTP"></b></p>
-    <input type="number" id="otpInput" placeholder="Enter OTP">
-    <button onclick="verifyOTP()">Verify OTP</button>
-</div>
+    <label>Date of Birth</label>
+    <input type="date" id="dob" required />
 
-<!-- STEP 3 EMAIL -->
-<div class="step" id="step3">
-    <input type="email" id="email" placeholder="Enter Email ID">
-    <button onclick="nextStep(4)">Next</button>
-</div>
-
-<!-- STEP 4 PERSONAL -->
-<div class="step" id="step4">
-    <input id="fname" placeholder="First Name">
-    <input id="lname" placeholder="Last Name">
-    <input type="date" id="dob">
+    <label>Gender</label>
     <select id="gender">
-        <option value="">Select Gender</option>
-        <option>Male</option>
-        <option>Female</option>
-    </select>
-    <input type="file" accept="image/*" onchange="previewImage(event)">
-    <img id="preview">
-    <button onclick="nextStep(5)">Next</button>
-</div>
-
-<!-- STEP 5 ADDRESS -->
-<div class="step" id="step5">
-    <select id="state" onchange="loadDistrict()">
-        <option value="">Select State</option>
-        <option>Odisha</option>
+      <option>Male</option>
+      <option>Female</option>
+      <option>Other</option>
     </select>
 
-    <select id="district" onchange="loadCity()">
-        <option value="">Select District</option>
-    </select>
+    <button onclick="registerSIM()">Register SIM</button>
 
-    <select id="city">
-        <option value="">Select City</option>
-    </select>
+    <div id="output" class="result" style="display:none;"></div>
+  </div>
 
-    <input id="village" placeholder="Village Name">
-    <button onclick="generateAadhaar()">Submit</button>
-</div>
-
-<!-- STEP 6 AADHAAR -->
-<div class="step" id="step6">
-    <div id="aadhaarCard">
-        <h3>Aadhaar Card (Demo)</h3>
-        <p id="cardName"></p>
-        <p id="cardDob"></p>
-        <p id="cardGender"></p>
-        <p><b id="aadhaarNumber"></b></p>
-        <div id="qrcode"></div>
-    </div>
-</div>
-
-</div>
-
-<script>
-let otp = "";
-let registeredMobiles = JSON.parse(localStorage.getItem("mobiles")) || [];
-
-function sendOTP() {
-    let mobile = document.getElementById("mobile").value;
-    if (registeredMobiles.includes(mobile)) {
-        alert("Mobile already registered!");
-        return;
+  <script>
+    function generateSimNumber() {
+      return "SK-" + Math.floor(100000000 + Math.random() * 900000000);
     }
-    otp = Math.floor(100000 + Math.random() * 900000);
-    document.getElementById("showOTP").innerText = otp;
-    nextStep(2);
-}
 
-function verifyOTP() {
-    if (document.getElementById("otpInput").value == otp) {
-        registeredMobiles.push(document.getElementById("mobile").value);
-        localStorage.setItem("mobiles", JSON.stringify(registeredMobiles));
-        nextStep(3);
-    } else {
-        alert("Invalid OTP");
+    function generateBarcode(container) {
+      container.innerHTML = "";
+      for (let i = 0; i < 30; i++) {
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        bar.style.height = Math.random() * 60 + "px";
+        container.appendChild(bar);
+      }
     }
-}
 
-function nextStep(n) {
-    document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
-    document.getElementById("step" + n).classList.add("active");
-}
+    function registerSIM() {
+      const data = {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        dob: dob.value,
+        gender: gender.value,
+        simNumber: generateSimNumber()
+      };
 
-function previewImage(e) {
-    document.getElementById("preview").src = URL.createObjectURL(e.target.files[0]);
-}
+      // Save to localStorage (local store)
+      localStorage.setItem("simRegistration", JSON.stringify(data));
 
-function loadDistrict() {
-    let d = document.getElementById("district");
-    d.innerHTML = "<option>Rayagada</option><option>Ganjam</option>";
-}
+      const output = document.getElementById("output");
+      output.style.display = "block";
+      output.innerHTML = `
+        <strong>SIM Activated Successfully</strong><br>
+        Name: ${data.firstName} ${data.lastName}<br>
+        DOB: ${data.dob}<br>
+        Gender: ${data.gender}<br>
+        SIM Number: <b>${data.simNumber}</b>
+        <div class="barcode" id="barcode"></div>
+      `;
 
-function loadCity() {
-    let c = document.getElementById("city");
-    c.innerHTML = "<option>Gunupur</option><option>Muniguda</option>";
-}
-
-function generateAadhaar() {
-    let aadhaar = "";
-    for (let i = 0; i < 12; i++) aadhaar += Math.floor(Math.random() * 10);
-    
-    document.getElementById("cardName").innerText =
-        document.getElementById("fname").value + " " +
-        document.getElementById("lname").value;
-
-    document.getElementById("cardDob").innerText =
-        "DOB: " + document.getElementById("dob").value;
-
-    document.getElementById("cardGender").innerText =
-        "Gender: " + document.getElementById("gender").value;
-
-    document.getElementById("aadhaarNumber").innerText = aadhaar;
-
-    new QRCode(document.getElementById("qrcode"), aadhaar);
-
-    let data = {
-        mobile: document.getElementById("mobile").value,
-        email: document.getElementById("email").value,
-        aadhaar: aadhaar
-    };
-    localStorage.setItem("userData", JSON.stringify(data));
-
-    nextStep(6);
-}
-</script>
-
+      generateBarcode(document.getElementById("barcode"));
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K SIM Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    background:#0f2027;
+    font-family:Segoe UI;
+    color:#fff
+}
+.header{
+    background:#111;
+    padding:15px;
+    text-align:center
+}
+.nav{
+    display:flex;
+    gap:8px;
+    padding:10px
+}
+.nav button{
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    background:#00e6ff;
+    font-weight:bold;
+    cursor:pointer
+}
+.box{padding:15px}
+
+.msg{
+    background:#263238;
+    padding:10px;
+    margin:6px 0;
+    border-radius:8px;
+    animation:slide .4s;
+}
+.sent{
+    background:#004d40;
+    text-align:right;
+}
+@keyframes slide{
+    from{opacity:0;transform:translateX(-20px)}
+    to{opacity:1}
+}
+
+input,button{
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    border-radius:8px;
+    border:none
+}
+input{
+    background:#222;
+    color:#fff
+}
+.success{
+    background:#1b5e20;
+    padding:10px;
+    border-radius:8px;
+    text-align:center;
+    animation:fade .5s
+}
+@keyframes fade{
+    from{opacity:0;transform:scale(.9)}
+    to{opacity:1}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h3>S.K SIM Home</h3>
+SIM: <span id="mysim"></span>
+</div>
+
+<div class="nav">
+<button onclick="home()">🏠 Home</button>
+<button onclick="sendUI()">📤 Send</button>
+<button onclick="notify()">🔔 Notifications</button>
+</div>
+
+<div class="box" id="content"></div>
+
+<script>
+const content = document.getElementById("content");
+const mySIM = localStorage.getItem("activeSIM");
+
+document.getElementById("mysim").textContent = mySIM || "Not Logged In";
+
+function home(){
+    content.innerHTML = `
+        <b>Welcome to S.K SIM Messaging</b><br><br>
+        ✔ Secure Local Messaging<br>
+        ✔ Instant Notifications<br>
+        ✔ SIM-based Chat
+    `;
+}
+
+function sendUI(){
+    content.innerHTML = `
+        <input id="to" placeholder="Receiver SIM (10 digits)">
+        <input id="msg" placeholder="Type message">
+        <button onclick="send()">Send Message</button>
+    `;
+}
+
+function send(){
+    const to = document.getElementById("to").value.trim();
+    const msg = document.getElementById("msg").value.trim();
+
+    if(!to || !msg){
+        alert("Enter receiver SIM and message");
+        return;
+    }
+
+    // SAVE TO RECEIVER INBOX
+    const inboxKey = "inbox_" + to;
+    const inbox = JSON.parse(localStorage.getItem(inboxKey)) || [];
+    inbox.push({
+        from: mySIM,
+        text: msg,
+        time: new Date().toLocaleTimeString()
+    });
+    localStorage.setItem(inboxKey, JSON.stringify(inbox));
+
+    // SAVE TO SENT
+    const sentKey = "sent_" + mySIM;
+    const sent = JSON.parse(localStorage.getItem(sentKey)) || [];
+    sent.push({
+        to: to,
+        text: msg,
+        time: new Date().toLocaleTimeString()
+    });
+    localStorage.setItem(sentKey, JSON.stringify(sent));
+
+    // SUCCESS UI
+    content.innerHTML = `
+        <div class="success">
+            ✔ Message Sent Successfully
+        </div>
+    `;
+}
+
+function notify(){
+    const inbox = JSON.parse(localStorage.getItem("inbox_" + mySIM)) || [];
+    content.innerHTML = "<b>Inbox</b><br>";
+
+    if(inbox.length === 0){
+        content.innerHTML += "<small>No messages</small>";
+        return;
+    }
+
+    inbox.reverse().forEach(m=>{
+        const d = document.createElement("div");
+        d.className = "msg";
+        d.innerHTML = `
+            <small>From: ${m.from} | ${m.time}</small><br>
+            ${m.text}
+        `;
+        content.appendChild(d);
+    });
+}
+
+home();
+</script>
+
+</body>
+</html>
