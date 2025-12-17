@@ -26,24 +26,30 @@ h1{
     font-size:2rem;
     animation:fadeIn 1s ease;
 }
-button{
+.button-card{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+.button-card button{
     background: #00e6ff;
     color:#000;
     font-weight:bold;
-    padding:15px 25px;
+    padding:20px 40px;
     border:none;
-    border-radius:12px;
-    font-size:1rem;
+    border-radius:15px;
+    font-size:1.1rem;
     cursor:pointer;
     transition: all 0.3s ease;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
-button:hover{
-    transform: scale(1.1);
+.button-card button:hover{
+    transform: scale(1.1) rotate(-2deg);
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     background:#00bcd4;
 }
-button:active{
+.button-card button:active{
     transform: scale(0.95);
 }
 @keyframes fadeIn{
@@ -56,8 +62,11 @@ button:active{
 
 <div class="container">
     <h1>Welcome to S.K SIM</h1>
-    <button onclick="location.href='Aadhar/registration.html'">🆔 Aadhaar Registration</button>
-    <button onclick="location.href='SIM/sk.html'">💬 S.K SIM Chat</button>
+    <div class="button-card">
+        <button onclick="location.href='admin.html'">admin</button>
+        <button onclick="location.href='login.html'">Login</button>
+        <button onclick="location.href='sim.html'">Registration</button>
+    </div>
 </div>
 
 </body>
