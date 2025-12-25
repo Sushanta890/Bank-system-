@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Dashboard</title>
+<style>
+body { font-family: Arial; background:#f0f2f5; }
+.container { max-width:700px; margin:20px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1);}
+input, button { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;}
+button { background:#007BFF; color:white; border:none; cursor:pointer;}
+button:hover { background:#0056b3; }
+h2,h3 { margin-top:20px; }
+.transaction { display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #ccc; }
+.logout-btn { background:#FF4B4B; margin-top:10px; }
+.logout-btn:hover { background:#d93636; }
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Dashboard</h2>
+<p id="userInfo"></p>
+<button class="logout-btn" id="logoutBtn">Logout</button>
+<h3>Balance: <span id="balanceInfo">₹0</span></h3>
+
+<h3>Deposit Money</h3>
+<form id="depositForm">
+    <input type="text" name="account_number" placeholder="Account Number" required>
+    <input type="text" name="name" placeholder="Deposit Name" required>
+    <input type="number" name="amount" placeholder="Amount" required>
+    <button type="submit">Deposit</button>
+</form>
+
+<h3>Purchase / Bills</h3>
+<form id="purchaseForm">
+    <input type="text" name="account_number" placeholder="Account Number" required>
+    <input type="text" name="item_name" placeholder="Item Name" required>
+    <input type="number" name="amount" placeholder="Amount" required>
+    <button type="submit">Submit Purchase</button>
+</form>
+
+<h3>Activate ATM</h3>
+<form id="atmForm">
+    <input type="text" name="account_number" placeholder="Account Number" required>
+    <input type="text" name="customer_id" placeholder="Customer ID" required>
+    <button type="submit">Activate ATM</button>
+</form>
+
+<h3>Transaction History</h3>
+<div id="transactions" style="max-height:200px; overflow:auto;"></div>
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+let currentUser = JSON.parse(sessionStorage.getItem('user'));
+if(!currentUser){ window.location.href='login.html'; }
+
+document.getElementById('userInfo').innerText = 
+`Name: ${currentUser.first_name} ${currentUser.last_name}
+Account: ${currentUser.bank_account_number}
+Customer ID: ${currentUser.customer_id}
+Address: ${currentUser.address}`;
+
+// Logout button
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    sessionStorage.removeItem('user');
+    window.location.href = 'login.html';
+});
+
+// Auto-fill forms
+document.getElementById('depositForm').account_number.value = currentUser.bank_account_number;
+document.getElementById('purchaseForm').account_number.value = currentUser.bank_account_number;
+document.getElementById('atmForm').account_number.value = currentUser.bank_account_number;
+document.getElementById('atmForm').customer_id.value = currentUser.customer_id;
+
+// Load balance
+async function loadBalance(){ 
+    let res = await fetch(API+'/balance',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({identifier: currentUser.bank_account_number})
+    });
+    let data = await res.json();
+    if(data.status==='success'){ document.getElementById('balanceInfo').innerText=`₹${data.balance}`; }
+}
+
+// Load transactions
+async function loadTransactions(){ 
+    let res = await fetch(API+'/transactions',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({account_number: currentUser.bank_account_number})
+    });
+    let data = await res.json();
+    const container = document.getElementById('transactions');
+    container.innerHTML='';
+    data.transactions.forEach(tx=>{
+        let div = document.createElement('div');
+        div.className='transaction';
+        div.innerText=`${tx.transaction_time} - ${tx.transaction_type} - ${tx.item_name} - ₹${tx.amount}`;
+        container.appendChild(div);
+    });
+}
+
+loadBalance();
+loadTransactions();
+
+// Deposit
+document.getElementById('depositForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    let data = Object.fromEntries(new FormData(e.target).entries());
+    let res = await fetch(API+'/deposit',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    let resData = await res.json();
+    alert(resData.message);
+    loadBalance();
+    loadTransactions();
+});
+
+// Purchase
+document.getElementById('purchaseForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    let data = Object.fromEntries(new FormData(e.target).entries());
+    let res = await fetch(API+'/purchase',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    let resData = await res.json();
+    alert(resData.message);
+    loadBalance();
+    loadTransactions();
+});
+
+// ATM
+document.getElementById('atmForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    let data = Object.fromEntries(new FormData(e.target).entries());
+    let res = await fetch(API+'/activate_atm',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    let resData = await res.json();
+    alert(`ATM Card Number: ${resData.atm_card_number}`);
+});
+</script>
+</body>
+</html>
