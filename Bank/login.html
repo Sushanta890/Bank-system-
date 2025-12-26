@@ -1,52 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bank Login</title>
+<title>Login</title>
 <style>
-body { font-family: Arial; background:#f0f2f5; }
-.container { max-width:500px; margin:50px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1);}
-input, button { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;}
-button { background:#007BFF; color:white; border:none; cursor:pointer;}
-button:hover { background:#0056b3; }
-.success { color:green; font-weight:bold; }
+body{background:#020617;color:white;font-family:sans-serif}
+.box{width:300px;margin:80px auto;padding:20px;
+background:#0f172a;border-radius:10px}
 </style>
 </head>
 <body>
-<div class="container">
+
+<audio id="alarm" src="alarm.mp3"></audio>
+
+<div class="box">
 <h2>Login</h2>
-<form id="loginForm">
-    <input type="text" name="mobile_number" placeholder="Mobile Number" required>
-    <button type="submit">Login</button>
-</form>
-<p id="loginMessage"></p>
-<p>Don't have an account? <a href="registration.html">Register here</a></p>
+<input id="mobile" placeholder="Mobile Number">
+<button onclick="login()">Login</button>
+<div id="out"></div>
 </div>
 
 <script>
-const API = 'http://localhost:5000';
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    let data = Object.fromEntries(new FormData(e.target).entries());
-    try {
-        let res = await fetch(API+'/login',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify(data)
-        });
-        let resData = await res.json();
-        if(resData.status==='success' && resData.user){
-            sessionStorage.setItem('user', JSON.stringify(resData.user));
-            window.location.href = 'dashboard.html';
-        } else {
-            document.getElementById('loginMessage').innerText = resData.message || 'Login failed';
-        }
-    } catch(err){
-        console.error(err);
-        document.getElementById('loginMessage').innerText = 'Error connecting to server';
-    }
+let fail = 0;
+
+function login(){
+fetch("http://localhost:5000/login",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({mobile:mobile.value})
+}).then(r=>r.json()).then(d=>{
+if(d.status=="success"){
+out.innerHTML=`
+Name: ${d.user.first_name} ${d.user.last_name}<br>
+Account: ${d.user.account_number}<br>
+Customer ID: ${d.user.customer_id}
+`;
+}else{
+fail++;
+if(fail>=3){
+document.getElementById("alarm").play();
+alert("⚠ Hack Attempt Detected!");
+}
+}
 });
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bank Registration</title>
+<style>
+body{font-family:Arial;background:#0f172a;color:white}
+.card{width:320px;margin:60px auto;padding:20px;
+background:#111827;border-radius:10px;animation:slide 1s}
+input,button{width:100%;padding:10px;margin:8px 0}
+@keyframes slide{from{opacity:0;transform:translateY(50px)}}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h2>Register</h2>
+<input id="first" placeholder="First Name">
+<input id="last" placeholder="Last Name">
+<input id="mobile" placeholder="Mobile Number">
+<button onclick="register()">Register</button>
+</div>
+
+<script>
+function register(){
+fetch("http://localhost:5000/register",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+first:first.value,
+last:last.value,
+mobile:mobile.value
+})
+}).then(r=>r.json()).then(d=>{
+alert("Registration Successful");
+});
+}
+</script>
+</body>
+</html>
