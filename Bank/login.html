@@ -1,48 +1,156 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Login</title>
+<meta charset="UTF-8">
+<title>Firewall Breach Simulation</title>
+
 <style>
-body{background:#020617;color:white;font-family:sans-serif}
-.box{width:300px;margin:80px auto;padding:20px;
-background:#0f172a;border-radius:10px}
+/* ===== RESET ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ===== BODY ===== */
+body {
+    background: black;
+    color: #00ff00;
+    font-family: "Courier New", monospace;
+    overflow: hidden;
+}
+
+/* ===== TERMINAL ===== */
+#terminal {
+    padding: 20px;
+    font-size: 16px;
+    white-space: pre-line;
+    animation: flicker 0.15s infinite;
+}
+
+/* ===== ALERT TEXT ===== */
+.alert {
+    color: red;
+    font-size: 22px;
+    font-weight: bold;
+    animation: blink 0.4s infinite;
+}
+
+/* ===== FIREWALL BAR ===== */
+#firewall {
+    width: 80%;
+    height: 30px;
+    border: 2px solid red;
+    margin: 30px auto;
+    position: relative;
+}
+
+#progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, red, yellow);
+    animation: breach 6s forwards;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes breach {
+    from { width: 0%; }
+    to { width: 100%; }
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+@keyframes flicker {
+    50% { opacity: 0.95; }
+}
+
+/* ===== SHAKE EFFECT ===== */
+.shake {
+    animation: shake 0.15s infinite;
+}
+
+@keyframes shake {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(2px,0); }
+    50% { transform: translate(-2px,0); }
+    75% { transform: translate(0,2px); }
+    100% { transform: translate(0,-2px); }
+}
 </style>
 </head>
+
 <body>
 
-<audio id="alarm" src="alarm.mp3"></audio>
-
-<div class="box">
-<h2>Login</h2>
-<input id="mobile" placeholder="Mobile Number">
-<button onclick="login()">Login</button>
-<div id="out"></div>
+<div id="terminal">
+Initializing firewall module...
+Scanning ports 22, 80, 443...
+Brute force attempt detected...
 </div>
 
-<script>
-let fail = 0;
+<div id="firewall">
+    <div id="progress"></div>
+</div>
 
-function login(){
-fetch("http://localhost:5000/login",{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({mobile:mobile.value})
-}).then(r=>r.json()).then(d=>{
-if(d.status=="success"){
-out.innerHTML=`
-Name: ${d.user.first_name} ${d.user.last_name}<br>
-Account: ${d.user.account_number}<br>
-Customer ID: ${d.user.customer_id}
-`;
-}else{
-fail++;
-if(fail>=3){
-document.getElementById("alarm").play();
-alert("⚠ Hack Attempt Detected!");
+<div class="alert" style="text-align:center;">
+⚠ FIREWALL UNDER ATTACK ⚠
+</div>
+
+<audio id="alarm" loop>
+    <source src="alarm.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ===== SOUND ===== */
+const alarm = document.getElementById("alarm");
+alarm.volume = 1.0;
+
+/* ===== TERMINAL TEXT ===== */
+const terminal = document.getElementById("terminal");
+
+const lines = [
+    "Injecting malicious payload...",
+    "Bypassing firewall rules...",
+    "Exploiting vulnerability CVE‑XXXX...",
+    "Accessing secure memory...",
+    "Decrypting credentials...",
+    "Firewall integrity: 12%",
+    "Firewall integrity: 6%",
+    "Firewall integrity: 0%",
+    "",
+    ">>> FIREWALL BREACHED <<<"
+];
+
+let index = 0;
+
+function typeLine() {
+    if (index < lines.length) {
+        terminal.innerHTML += "\n" + lines[index];
+        index++;
+        setTimeout(typeLine, 600);
+    } else {
+        breachComplete();
+    }
 }
+
+/* ===== BREACH COMPLETE ===== */
+function breachComplete() {
+    document.body.classList.add("shake");
+
+    // voice alert
+    const msg = new SpeechSynthesisUtterance(
+        "Warning. Firewall breached. This is a cybersecurity simulation."
+    );
+    speechSynthesis.speak(msg);
 }
-});
-}
+
+/* ===== START ===== */
+window.onload = () => {
+    alarm.play().catch(()=>{});
+    setTimeout(typeLine, 1500);
+};
 </script>
+
 </body>
 </html>

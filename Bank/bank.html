@@ -1,39 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Bank Registration</title>
+<title>Security Breach Simulation</title>
 <style>
-body{font-family:Arial;background:#0f172a;color:white}
-.card{width:320px;margin:60px auto;padding:20px;
-background:#111827;border-radius:10px;animation:slide 1s}
-input,button{width:100%;padding:10px;margin:8px 0}
-@keyframes slide{from{opacity:0;transform:translateY(50px)}}
+body {
+    background:black;
+    color:#00ff00;
+    font-family: monospace;
+    text-align:center;
+}
+.glitch {
+    animation: blink 0.2s infinite;
+}
+@keyframes blink {
+    50% { opacity: 0; }
+}
 </style>
 </head>
 <body>
 
-<div class="card">
-<h2>Register</h2>
-<input id="first" placeholder="First Name">
-<input id="last" placeholder="Last Name">
-<input id="mobile" placeholder="Mobile Number">
-<button onclick="register()">Register</button>
-</div>
+<h1 class="glitch">⚠ SYSTEM BREACH DETECTED ⚠</h1>
+<h2 id="name"></h2>
+<h3 id="acc"></h3>
+<h3 id="cid"></h3>
+
+<audio autoplay loop>
+  <source src="alarm.mp3" type="audio/mpeg">
+</audio>
 
 <script>
-function register(){
-fetch("http://localhost:5000/register",{
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-first:first.value,
-last:last.value,
-mobile:mobile.value
+fetch("http://127.0.0.1:5000/login",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json"},
+    body:JSON.stringify({ mobile: localStorage.getItem("mobile") })
 })
-}).then(r=>r.json()).then(d=>{
-alert("Registration Successful");
+.then(res=>res.json())
+.then(data=>{
+    document.getElementById("name").innerText =
+        "TARGET: " + data.first_name + " " + data.last_name;
+    document.getElementById("acc").innerText =
+        "ACCOUNT: " + data.account_number;
+    document.getElementById("cid").innerText =
+        "CUSTOMER ID: " + data.customer_id;
 });
-}
 </script>
+
+<p style="color:red">
+⚠ This is an educational cybersecurity simulation ⚠
+</p>
+
 </body>
 </html>
