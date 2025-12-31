@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bank System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 50px;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            width: 400px;
+        }
+        h2 {
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #otpDiv, #userInfo, #message {
+            margin-top: 20px;
+        }
+        #message {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Bank Registration</h2>
+        <form id="registerForm">
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+            <button type="submit">Register</button>
+        </form>
+
+        <div id="otpDiv" style="display:none;">
+            <h3>OTP Verification</h3>
+            <input type="text" id="otpInput" placeholder="Enter OTP">
+            <button onclick="verifyOtp()">Verify OTP</button>
+        </div>
+
+        <div id="message"></div>
+
+        <hr>
+
+        <h2>Bank Login</h2>
+        <form id="loginForm">
+            <input type="text" name="mobile_number" placeholder="Mobile Number" required>
+            <button type="submit">Login</button>
+        </form>
+
+        <div id="userInfo"></div>
+    </div>
+
+    <script>
+        let generatedOTP = "";
+        let registeredMobile = "";
+
+        // Registration
+        document.getElementById('registerForm').onsubmit = async function(e){
+            e.preventDefault();
+            document.getElementById('message').textContent = "";
+            let formData = new FormData(this);
+            try {
+                let res = await fetch('/register', { method:'POST', body: formData });
+                if(!res.ok) throw new Error("Server Error");
+                let data = await res.json();
+                generatedOTP = data.otp;
+                registeredMobile = data.mobile_number;
+
+                document.getElementById('otpDiv').style.display = 'block';
+                document.getElementById('message').textContent = "OTP sent to your mobile: " + generatedOTP;
+            } catch(err) {
+                document.getElementById('message').textContent = "Error: " + err.message;
+            }
+        }
+
+        // OTP Verification
+        function verifyOtp(){
+            let enteredOTP = document.getElementById('otpInput').value;
+            if(enteredOTP === generatedOTP){
+                document.getElementById('message').style.color = 'green';
+                document.getElementById('message').textContent = "OTP Verified Successfully! Your mobile number: " + registeredMobile;
+            } else {
+                document.getElementById('message').style.color = 'red';
+                document.getElementById('message').textContent = "Invalid OTP. Try again.";
+            }
+        }
+
+        // Login
+        document.getElementById('loginForm').onsubmit = async function(e){
+            e.preventDefault();
+            document.getElementById('message').textContent = "";
+            let formData = new FormData(this);
+            try {
+                let res = await fetch('/login', { method:'POST', body: formData });
+                let data = await res.json();
+                if(data.full_name){
+                    document.getElementById('userInfo').innerHTML = `
+                        <h3>Account Info</h3>
+                        Full Name: ${data.full_name} <br>
+                        Account Number: ${data.account_number} <br>
+                        Customer ID: ${data.customer_id}
+                    `;
+                } else {
+                    document.getElementById('userInfo').innerHTML = "";
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = data.message;
+                }
+            } catch(err) {
+                document.getElementById('message').textContent = "Error: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

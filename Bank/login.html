@@ -5,14 +5,12 @@
 <title>Firewall Breach Simulation</title>
 
 <style>
-/* ===== RESET ===== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ===== BODY ===== */
 body {
     background: black;
     color: #00ff00;
@@ -20,29 +18,28 @@ body {
     overflow: hidden;
 }
 
-/* ===== TERMINAL ===== */
+/* TERMINAL */
 #terminal {
     padding: 20px;
     font-size: 16px;
     white-space: pre-line;
-    animation: flicker 0.15s infinite;
 }
 
-/* ===== ALERT TEXT ===== */
+/* ALERT */
 .alert {
     color: red;
     font-size: 22px;
     font-weight: bold;
-    animation: blink 0.4s infinite;
+    text-align: center;
+    animation: blink 0.5s infinite;
 }
 
-/* ===== FIREWALL BAR ===== */
+/* FIREWALL BAR */
 #firewall {
     width: 80%;
     height: 30px;
     border: 2px solid red;
     margin: 30px auto;
-    position: relative;
 }
 
 #progress {
@@ -52,7 +49,7 @@ body {
     animation: breach 6s forwards;
 }
 
-/* ===== ANIMATIONS ===== */
+/* ANIMATIONS */
 @keyframes breach {
     from { width: 0%; }
     to { width: 100%; }
@@ -62,11 +59,6 @@ body {
     50% { opacity: 0; }
 }
 
-@keyframes flicker {
-    50% { opacity: 0.95; }
-}
-
-/* ===== SHAKE EFFECT ===== */
 .shake {
     animation: shake 0.15s infinite;
 }
@@ -84,73 +76,92 @@ body {
 <body>
 
 <div id="terminal">
-Initializing firewall module...
-Scanning ports 22, 80, 443...
-Brute force attempt detected...
+Initializing firewall...
+Scanning network ports...
+Monitoring intrusion attempts...
 </div>
 
 <div id="firewall">
     <div id="progress"></div>
 </div>
 
-<div class="alert" style="text-align:center;">
-⚠ FIREWALL UNDER ATTACK ⚠
-</div>
+<div class="alert">⚠ FIREWALL UNDER ATTACK ⚠</div>
 
+<!-- ALARM SOUND -->
 <audio id="alarm" loop>
     <source src="alarm.mp3" type="audio/mpeg">
 </audio>
 
-<script>
-/* ===== SOUND ===== */
-const alarm = document.getElementById("alarm");
-alarm.volume = 1.0;
+<!-- START BUTTON (IMPORTANT FOR MOBILE) -->
+<div style="text-align:center;margin-top:30px;">
+    <button onclick="startSimulation()" style="
+        padding:12px 25px;
+        font-size:18px;
+        background:red;
+        color:white;
+        border:none;
+        cursor:pointer;">
+        START SIMULATION
+    </button>
+</div>
 
-/* ===== TERMINAL TEXT ===== */
+<script>
 const terminal = document.getElementById("terminal");
+const alarm = document.getElementById("alarm");
 
 const lines = [
     "Injecting malicious payload...",
     "Bypassing firewall rules...",
-    "Exploiting vulnerability CVE‑XXXX...",
-    "Accessing secure memory...",
+    "Exploiting vulnerability...",
     "Decrypting credentials...",
-    "Firewall integrity: 12%",
-    "Firewall integrity: 6%",
+    "Firewall integrity: 25%",
+    "Firewall integrity: 10%",
     "Firewall integrity: 0%",
     "",
     ">>> FIREWALL BREACHED <<<"
 ];
 
-let index = 0;
+let i = 0;
 
+/* TYPE EFFECT */
 function typeLine() {
-    if (index < lines.length) {
-        terminal.innerHTML += "\n" + lines[index];
-        index++;
+    if (i < lines.length) {
+        terminal.innerHTML += "\n" + lines[i];
+        i++;
         setTimeout(typeLine, 600);
     } else {
         breachComplete();
     }
 }
 
-/* ===== BREACH COMPLETE ===== */
+/* BREACH COMPLETE */
 function breachComplete() {
     document.body.classList.add("shake");
 
-    // voice alert
-    const msg = new SpeechSynthesisUtterance(
-        "Warning. Firewall breached. This is a cybersecurity simulation."
-    );
-    speechSynthesis.speak(msg);
+    // SAFE SPEECH SYNTHESIS
+    if ("speechSynthesis" in window) {
+        const msg = new window.SpeechSynthesisUtterance(
+            "Warning. Firewall breached. This is an educational cybersecurity simulation."
+        );
+        msg.rate = 1;
+        msg.pitch = 1;
+        msg.volume = 1;
+        window.speechSynthesis.speak(msg);
+    }
 }
 
-/* ===== START ===== */
-window.onload = () => {
+/* START (USER ACTION REQUIRED) */
+function startSimulation() {
+    alarm.volume = 1.0;
     alarm.play().catch(()=>{});
-    setTimeout(typeLine, 1500);
-};
+    typeLine();
+}
 </script>
+
+<!-- SAFETY NOTICE -->
+<p style="position:fixed;bottom:10px;width:100%;text-align:center;color:#888;">
+Educational Cybersecurity Simulation – No Real Hacking
+</p>
 
 </body>
 </html>
