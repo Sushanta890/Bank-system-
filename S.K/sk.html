@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K One-Time Registration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#141E30,#243B55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background: #fff;
+    padding: 30px;
+    width: 380px;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    animation: slideUp 0.8s ease-in-out;
+}
+
+@keyframes slideUp {
+    from {opacity:0; transform: translateY(40px);}
+    to {opacity:1; transform: translateY(0);}
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #243B55;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: 0.3s;
+    font-size: 14px;
+}
+
+input:focus, select:focus {
+    border-color: #243B55;
+    box-shadow: 0 0 10px rgba(36,59,85,0.4);
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #243B55;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #141E30;
+}
+
+.message {
+    text-align: center;
+    margin-top: 12px;
+    font-weight: bold;
+}
+.success { color: green; }
+.error { color: red; }
+
+label {
+    font-size: 13px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>S.K Registration</h2>
+
+<form id="skForm">
+
+<input type="text" id="fullname" placeholder="Full Name" required>
+
+<label>Date of Birth</label>
+<input type="date" id="dob" required>
+
+<select id="gender" required>
+<option value="">Select Gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+
+<input type="text" id="village" placeholder="Village / Town / City" required>
+<input type="text" id="district" placeholder="District" required>
+<input type="text" id="state" placeholder="State" required>
+
+<input type="email" id="email" placeholder="E-Mail" required>
+
+<input type="tel" id="mobile" placeholder="Mobile Number"
+pattern="[0-9]{10}" maxlength="10" required>
+
+<button type="submit">Submit Registration</button>
+
+<div class="message" id="message"></div>
+
+</form>
+</div>
+
+<script>
+
+function generateSKNumber() {
+    return "SK" + Date.now();
+}
+
+function calculateAge(dob) {
+    let birthDate = new Date(dob);
+    let today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    let m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+document.getElementById("skForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let dob = document.getElementById("dob").value;
+    let age = calculateAge(dob);
+
+    if(age < 18){
+        document.getElementById("message").innerHTML =
+            "Minimum age must be 18 years!";
+        document.getElementById("message").className = "message error";
+        return;
+    }
+
+    let mobile = document.getElementById("mobile").value;
+    let allData = JSON.parse(localStorage.getItem("skUsers")) || [];
+
+    // 🔒 One Time Registration Check
+    let alreadyExists = allData.some(user => user.mobile === mobile);
+
+    if(alreadyExists){
+        document.getElementById("message").innerHTML =
+            "This Mobile Number is Already Registered!";
+        document.getElementById("message").className = "message error";
+        return;
+    }
+
+    let skNumber = generateSKNumber();
+
+    let userData = {
+        skNumber: skNumber,
+        fullName: document.getElementById("fullname").value,
+        dob: dob,
+        age: age,
+        gender: document.getElementById("gender").value,
+        village: document.getElementById("village").value,
+        district: document.getElementById("district").value,
+        state: document.getElementById("state").value,
+        email: document.getElementById("email").value,
+        mobile: mobile
+    };
+
+    allData.push(userData);
+    localStorage.setItem("skUsers", JSON.stringify(allData));
+
+    document.getElementById("message").innerHTML =
+        "Registration Successful!<br>Your S.K Number: " + skNumber;
+    document.getElementById("message").className = "message success";
+
+    document.getElementById("skForm").reset();
+});
+
+</script>
+
+</body>
+</html>

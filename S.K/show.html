@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K Card Verification</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background: #fff;
+    padding: 25px;
+    width: 350px;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {opacity:0; transform: translateY(30px);}
+    to {opacity:1; transform: translateY(0);}
+}
+
+h2 { text-align: center; }
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #203a43;
+    color: white;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+button:hover { background: #0f2027; }
+
+.card {
+    text-align: center;
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #f0f0f0;
+}
+
+.card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.success { color: green; }
+.error { color: red; }
+.timer { color: red; font-weight: bold; }
+
+@media print {
+    body * { visibility: hidden; }
+    #cardSection, #cardSection * { visibility: visible; }
+    #cardSection { position: absolute; left: 0; top: 0; width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>S.K Card Login</h2>
+
+<div id="mobileSection">
+<input type="tel" id="mobile" placeholder="Enter Registered Mobile" maxlength="10">
+<button onclick="sendOTP()">Generate OTP</button>
+</div>
+
+<div id="otpSection" style="display:none;">
+<input type="text" id="otpInput" placeholder="Enter OTP">
+<p id="otpDisplay" class="success"></p>
+<p class="timer" id="timer"></p>
+<button onclick="verifyOTP()">Submit OTP</button>
+<button onclick="resendOTP()">Resend OTP</button>
+</div>
+
+<div id="cardSection" style="display:none;" class="card"></div>
+
+<p id="message"></p>
+
+</div>
+
+<script>
+
+let generatedOTP = "";
+let currentUser = null;
+let countdown;
+let timeLeft = 30;
+
+function startTimer(){
+    timeLeft = 30;
+    document.getElementById("timer").innerHTML = "OTP expires in: 30s";
+
+    countdown = setInterval(function(){
+        timeLeft--;
+        document.getElementById("timer").innerHTML = "OTP expires in: " + timeLeft + "s";
+
+        if(timeLeft <= 0){
+            clearInterval(countdown);
+            document.getElementById("timer").innerHTML = "OTP Expired!";
+            generatedOTP = "";
+        }
+    },1000);
+}
+
+function sendOTP(){
+
+    let mobile = document.getElementById("mobile").value;
+    let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+
+    let user = users.find(u => u.mobile === mobile);
+
+    if(!user){
+        document.getElementById("message").innerHTML =
+        "<span class='error'>Mobile Not Registered!</span>";
+        return;
+    }
+
+    currentUser = user;
+
+    generatedOTP = Math.floor(1000 + Math.random() * 9000);
+
+    document.getElementById("otpDisplay").innerHTML =
+    "Demo OTP: " + generatedOTP;
+
+    document.getElementById("mobileSection").style.display = "none";
+    document.getElementById("otpSection").style.display = "block";
+
+    startTimer();
+}
+
+function resendOTP(){
+    clearInterval(countdown);
+    sendOTP();
+}
+
+function verifyOTP(){
+
+    let enteredOTP = document.getElementById("otpInput").value;
+
+    if(enteredOTP == generatedOTP && generatedOTP !== ""){
+
+        clearInterval(countdown);
+
+        document.getElementById("otpSection").style.display = "none";
+        document.getElementById("cardSection").style.display = "block";
+
+        document.getElementById("cardSection").innerHTML = `
+            <h3>S.K ID CARD</h3>
+            ${currentUser.photo ? `<img src="${currentUser.photo}">` : ""}
+            <p><b>Full Name:</b> ${currentUser.fullName}</p>
+            <p><b>Date of Birth:</b> ${currentUser.dob}</p>
+            <p><b>S.K Number:</b> ${currentUser.skNumber}</p>
+            <button onclick="window.print()">🖨 Print Card</button>
+        `;
+
+    } else {
+        document.getElementById("message").innerHTML =
+        "<span class='error'>Invalid or Expired OTP!</span>";
+    }
+}
+
+</script>
+
+</body>
+</html>
