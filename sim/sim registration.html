@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SIM Registration</title>
+<style>
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#1e90ff,#00c6ff);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+.box{
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    width:330px;
+}
+input,textarea,button{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+}
+button{
+    background:#1e90ff;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+button:hover{background:#0d6efd;}
+.message{color:red;font-size:14px;}
+</style>
+</head>
+<body>
+
+<div class="box">
+<h2>SIM Registration</h2>
+
+<form onsubmit="submitForm(event)">
+<input type="text" id="firstName" placeholder="First Name" required>
+<input type="text" id="lastName" placeholder="Last Name" required>
+<input type="date" id="dob" required>
+<textarea id="address" placeholder="Address" required></textarea>
+
+<input type="text" id="skNumber" placeholder="Enter S.K Number (Example: SK2026123456)" required>
+<div class="message" id="skMessage"></div>
+
+<button type="submit">Submit</button>
+</form>
+</div>
+
+<script>
+
+function validateSK(sk){
+    let pattern = /^SK\d{10}$/;   // Example: SK + 10 digits
+    return pattern.test(sk);
+}
+
+function generateNumber(prefix){
+    return prefix + Math.floor(100000000 + Math.random()*900000000);
+}
+
+function submitForm(event){
+    event.preventDefault();
+
+    let sk = document.getElementById("skNumber").value;
+
+    if(!validateSK(sk)){
+        document.getElementById("skMessage").innerHTML="Invalid S.K Number Format!";
+        return;
+    }
+
+    document.getElementById("skMessage").innerHTML="";
+
+    let emiNumber = generateNumber("EMI");
+    let simNumber = generateNumber("SIM");
+
+    let userData = {
+        firstName:firstName.value,
+        lastName:lastName.value,
+        dob:dob.value,
+        address:address.value,
+        skNumber:sk,
+        emiNumber:emiNumber,
+        simNumber:simNumber,
+        status:"Pending"
+    };
+
+    localStorage.setItem(simNumber, JSON.stringify(userData));
+
+    alert("Registration Successful!\nSIM No: "+simNumber);
+
+    window.location.href="home.html";
+}
+</script>
+
+</body>
+</html>
