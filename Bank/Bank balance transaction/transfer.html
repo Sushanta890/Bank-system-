@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>S.K Bank Transfer System</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+    }
+    
+    .container {
+      background: white;
+      color: black;
+      width: 360px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+    
+    input,
+    button {
+      padding: 10px;
+      margin: 5px;
+      width: 90%;
+    }
+    
+    button {
+      background: #1e3c72;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    
+    table {
+      background: white;
+      color: black;
+      margin: auto;
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 95%;
+    }
+    
+    th,
+    td {
+      padding: 8px;
+      border: 1px solid black;
+    }
+    
+    canvas {
+      background: white;
+      margin-top: 20px;
+    }
+  </style>
+  
+</head>
+
+<body>
+  
+  <h2>S.K Bank Transfer System</h2>
+  
+  <div class="container">
+    
+    <input type="text" id="fromAcc" placeholder="Sender Account Number">
+    
+    <input type="text" id="toAcc" placeholder="Receiver Account Number">
+    
+    <input type="number" id="amount" placeholder="Enter Amount">
+    
+    <button onclick="transferMoney()">Transfer Money</button>
+    
+    <h3 id="result"></h3>
+    
+  </div>
+  
+  <canvas id="chart"></canvas>
+  
+  <h3>Transaction History</h3>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Amount</th>
+        <th>Type</th>
+        <th>Balance</th>
+      </tr>
+    </thead>
+    
+    <tbody id="historyTable">
+    </tbody>
+    
+  </table>
+  
+  
+  <script>
+    // TRANSFER FUNCTION
+    function transferMoney() {
+      
+      let fromAcc = document.getElementById("fromAcc").value.trim();
+      let toAcc = document.getElementById("toAcc").value.trim();
+      let amount = parseFloat(document.getElementById("amount").value);
+      
+      if (fromAcc == "" || toAcc == "" || amount <= 0) {
+        
+        alert("Enter valid details");
+        return;
+        
+      }
+      
+      let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+      
+      let sender = users.find(u => u.account === fromAcc);
+      let receiver = users.find(u => u.account === toAcc);
+      
+      if (!sender) {
+        
+        alert("Sender account not found");
+        return;
+        
+      }
+      
+      if (!receiver) {
+        
+        alert("Receiver account not found");
+        return;
+        
+      }
+      
+      if (!sender.balance) {
+        sender.balance = 0;
+      }
+      
+      if (!receiver.balance) {
+        receiver.balance = 0;
+      }
+      
+      if (sender.balance < amount) {
+        
+        alert("Insufficient balance");
+        return;
+        
+      }
+      
+      
+      // UPDATE BALANCE
+      sender.balance -= amount;
+      receiver.balance += amount;
+      
+      
+      // SAVE USERS
+      localStorage.setItem("skUsers", JSON.stringify(users));
+      
+      
+      // SAVE TRANSACTIONS
+      let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
+      
+      // sender record
+      transactions.push({
+        
+        account: sender.account,
+        type: "Transfer Sent",
+        amount: amount,
+        balance: sender.balance,
+        to: receiver.account,
+        date: new Date().toLocaleString()
+        
+      });
+      
+      // receiver record
+      transactions.push({
+        
+        account: receiver.account,
+        type: "Transfer Received",
+        amount: amount,
+        balance: receiver.balance,
+        from: sender.account,
+        date: new Date().toLocaleString()
+        
+      });
+      
+      localStorage.setItem("skTransactions", JSON.stringify(transactions));
+      
+      
+      // RESULT
+      document.getElementById("result").innerHTML =
+        "Transfer Successful<br>Sender Balance: ₹" + sender.balance;
+      
+      
+      // UPDATE HISTORY
+      showHistory();
+      
+      
+      // UPDATE CHART
+      loadChart(fromAcc);
+      
+    }
+    
+    
+    
+    // SHOW HISTORY
+    function showHistory() {
+      
+      let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
+      
+      let html = "";
+      
+      transactions.reverse().forEach(t => {
+        
+        html += `
+<tr>
+<td>${t.date}</td>
+<td>${t.from || "-"}</td>
+<td>${t.to || "-"}</td>
+<td>₹${t.amount}</td>
+<td>${t.type}</td>
+<td>₹${t.balance}</td>
+</tr>
+`;
+        
+      });
+      
+      document.getElementById("historyTable").innerHTML = html;
+      
+    }
+    
+    
+    
+    // LOAD CHART
+    function loadChart(acc) {
+      
+      let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
+      
+      let data = transactions.filter(t => t.account === acc);
+      
+      let labels = data.map(t => t.date);
+      let balances = data.map(t => t.balance);
+      
+      new Chart(document.getElementById("chart"), {
+        
+        type: "line",
+        
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "Balance History",
+            data: balances,
+            borderColor: "blue",
+            fill: true
+          }]
+        }
+        
+      });
+      
+    }
+    
+    
+    
+    // AUTO LOAD HISTORY
+    showHistory();
+  </script>
+  
+</body>
+
+</html>

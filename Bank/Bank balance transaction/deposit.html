@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>S.K Bank Deposit System with PDF Report</title>
+<meta charset="UTF-8">
+<title>S.K Bank Deposit</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 
 body{
 font-family:Arial;
-background:#0f172a;
+background:linear-gradient(135deg,#1e3c72,#2a5298);
 color:white;
 text-align:center;
 }
@@ -25,8 +22,8 @@ width:350px;
 margin:auto;
 padding:20px;
 border-radius:10px;
-box-shadow:0 0 15px cyan;
-animation:fadeIn 1s;
+margin-top:30px;
+animation:fadeIn 0.8s;
 }
 
 input,button{
@@ -36,48 +33,32 @@ width:90%;
 }
 
 button{
-background:#0ea5e9;
+background:#1e3c72;
 color:white;
 border:none;
 cursor:pointer;
+transition:0.3s;
 }
 
 button:hover{
-background:#0284c7;
+background:#2a5298;
 }
 
-.chart-box{
-width:90%;
-max-width:600px;
+canvas{
 background:white;
-margin:20px auto;
-padding:20px;
+margin-top:20px;
 border-radius:10px;
 }
 
-table{
-width:90%;
-margin:auto;
-background:white;
-color:black;
-border-collapse:collapse;
-}
-
-th,td{
-padding:10px;
-border:1px solid gray;
-}
-
-.balance{
-color:#00ff88;
-font-size:20px;
+.success{
+color:green;
 font-weight:bold;
-animation:pop 0.5s;
+animation:fadeIn 0.5s;
 }
 
-@keyframes pop{
-0%{transform:scale(0.5);}
-100%{transform:scale(1);}
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
 }
 
 </style>
@@ -89,274 +70,166 @@ animation:pop 0.5s;
 
 <div class="container">
 
-<input type="text" id="name" placeholder="Enter Name">
+<input type="text" id="accountNumber" placeholder="Enter Account Number">
 
-<input type="text" id="account" placeholder="Enter Account Number">
+<input type="text" id="name" placeholder="Enter Name">
 
 <input type="number" id="amount" placeholder="Enter Amount">
 
-<button onclick="deposit()">Deposit Money</button>
+<button onclick="depositMoney()">Deposit</button>
 
-<h3 id="balanceShow" class="balance"></h3>
-
-</div>
-
-
-<button onclick="downloadPDF()" style="margin:20px;padding:12px;background:green;">
-Download Full Report PDF
-</button>
-
-
-
-<div id="reportSection">
-
-<h2>Transaction History</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Name</th>
-<th>Account</th>
-<th>Amount</th>
-<th>Date</th>
-<th>Time</th>
-</tr>
-</thead>
-
-<tbody id="historyTable"></tbody>
-
-</table>
-
-
-
-<div class="chart-box">
-<canvas id="weeklyChart"></canvas>
-</div>
-
-<div class="chart-box">
-<canvas id="monthlyChart"></canvas>
-</div>
-
-<div class="chart-box">
-<canvas id="yearlyChart"></canvas>
-</div>
+<h3 id="result"></h3>
 
 </div>
 
+<canvas id="chart"></canvas>
 
 <script>
 
-// Deposit Function
-function deposit(){
+let chart;
 
-let name=document.getElementById("name").value;
-let acc=document.getElementById("account").value;
-let amt=parseFloat(document.getElementById("amount").value);
 
-if(!name || !acc || !amt){
+// DEPOSIT FUNCTION
+function depositMoney(){
 
-alert("Enter all details");
+let acc=document.getElementById("accountNumber").value.trim();
+
+let name=document.getElementById("name").value.trim();
+
+let amount=parseFloat(document.getElementById("amount").value);
+
+
+// VALIDATION
+if(acc=="" || name=="" || isNaN(amount) || amount<=0){
+
+alert("Enter valid details");
 
 return;
 
 }
 
-let users=JSON.parse(localStorage.getItem("skUsers"))||[];
 
+// LOAD USERS
+let users=JSON.parse(localStorage.getItem("skUsers")) || [];
+
+
+// FIND USER
 let user=users.find(u=>u.account===acc);
+
 
 if(!user){
 
-user={
-account:acc,
-name:name,
-balance:0
-};
+alert("Account not found");
 
-users.push(user);
+return;
 
 }
 
-if(!user.balance) user.balance=0;
 
-user.balance+=amt;
+// INITIAL BALANCE
+if(!user.balance){
+
+user.balance=0;
+
+}
 
 
-// Save deposits
-let deposits=JSON.parse(localStorage.getItem("skDeposits"))||[];
+// ADD BALANCE
+user.balance += amount;
 
-let now=new Date();
 
-deposits.push({
-
-name:name,
-account:acc,
-amount:amt,
-date:now.toLocaleDateString(),
-time:now.toLocaleTimeString(),
-timestamp:now
-
-});
-
-localStorage.setItem("skDeposits",JSON.stringify(deposits));
-
+// SAVE USERS
 localStorage.setItem("skUsers",JSON.stringify(users));
 
 
-// Show balance
-document.getElementById("balanceShow").innerHTML=
+// SAVE TRANSACTION HISTORY
+let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
 
-"Balance: ₹"+user.balance;
+transactions.push({
 
-
-// reload
-loadHistory();
-
-loadCharts();
-
-}
-
-
-
-// Load History
-function loadHistory(){
-
-let deposits=JSON.parse(localStorage.getItem("skDeposits"))||[];
-
-let table=document.getElementById("historyTable");
-
-table.innerHTML="";
-
-deposits.slice().reverse().forEach(d=>{
-
-table.innerHTML+=`
-
-<tr>
-
-<td>${d.name}</td>
-
-<td>${d.account}</td>
-
-<td>₹${d.amount}</td>
-
-<td>${d.date}</td>
-
-<td>${d.time}</td>
-
-</tr>
-
-`;
+account: user.account,
+name: name,
+type: "Deposit",
+amount: amount,
+balance: user.balance,
+date: new Date().toLocaleString()
 
 });
 
-}
+localStorage.setItem("skTransactions", JSON.stringify(transactions));
 
 
-
-// Charts
-function loadCharts(){
-
-let deposits=JSON.parse(localStorage.getItem("skDeposits"))||[];
-
-let weekly={},monthly={},yearly={};
-
-deposits.forEach(d=>{
-
-let date=new Date(d.timestamp);
-
-let week="Week "+Math.ceil(date.getDate()/7);
-
-let month=date.toLocaleString('default',{month:'short'});
-
-let year=date.getFullYear();
-
-weekly[week]=(weekly[week]||0)+d.amount;
-
-monthly[month]=(monthly[month]||0)+d.amount;
-
-yearly[year]=(yearly[year]||0)+d.amount;
-
-});
+// SHOW RESULT
+document.getElementById("result").innerHTML=
+"<span class='success'>Deposit Successful ✔<br>New Balance: ₹"+user.balance+"</span>";
 
 
-createChart("weeklyChart","bar",weekly,"Weekly Deposit");
+// CLEAR INPUT FIELDS AUTOMATICALLY
+document.getElementById("accountNumber").value="";
+document.getElementById("name").value="";
+document.getElementById("amount").value="";
 
-createChart("monthlyChart","bar",monthly,"Monthly Deposit");
 
-createChart("yearlyChart","line",yearly,"Yearly Deposit");
+// UPDATE CHART
+loadChart(user.account);
 
 }
 
 
+// LOAD CHART
+function loadChart(acc){
 
-function createChart(id,type,data,label){
+let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
 
-let chart=Chart.getChart(id);
+let data = transactions.filter(t=>t.account===acc);
 
-if(chart) chart.destroy();
+let labels=data.map(t=>t.date);
 
-new Chart(document.getElementById(id),{
+let amounts=data.map(t=>t.balance);
 
-type:type,
+
+// DESTROY OLD CHART
+if(chart){
+chart.destroy();
+}
+
+
+// CREATE NEW CHART
+chart = new Chart(document.getElementById("chart"),{
+
+type:"line",
 
 data:{
 
-labels:Object.keys(data),
+labels:labels,
 
 datasets:[{
 
-label:label,
+label:"Balance Growth",
 
-data:Object.values(data),
+data:amounts,
 
-backgroundColor:"#22c55e",
+borderColor:"green",
 
-borderColor:"#3b82f6",
+backgroundColor:"rgba(0,255,0,0.2)",
 
-fill:true
+fill:true,
+
+tension:0.4
 
 }]
 
+},
+
+options:{
+animation:{
+duration:1000
+}
 }
 
 });
 
 }
-
-
-
-// PDF Download
-async function downloadPDF(){
-
-const { jsPDF } = window.jspdf;
-
-let element=document.getElementById("reportSection");
-
-html2canvas(element,{scale:2}).then(canvas=>{
-
-let img=canvas.toDataURL("image/png");
-
-let pdf=new jsPDF("p","mm","a4");
-
-let width=210;
-
-let height=(canvas.height*width)/canvas.width;
-
-pdf.addImage(img,"PNG",0,0,width,height);
-
-pdf.save("SK_Bank_Report.pdf");
-
-});
-
-}
-
-
-
-// Load on start
-loadHistory();
-
-loadCharts();
 
 </script>
 
