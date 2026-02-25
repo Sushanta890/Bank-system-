@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K Card Registration</title>
+
+<style>
+body{
+    font-family: Arial;
+    background: linear-gradient(45deg,#1e3c72,#2a5298);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    width:350px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(-20px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+input, select{
+    width:100%;
+    padding:8px;
+    margin:5px 0;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    background:#2a5298;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1e3c72;
+}
+
+#result{
+    margin-top:10px;
+    color:green;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>S.K Card Registration</h2>
+
+<input type="text" id="first_name" placeholder="First Name" required>
+<input type="text" id="last_name" placeholder="Last Name" required>
+<input type="date" id="dob" required>
+
+<select id="gender">
+    <option value="">Select Gender</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+</select>
+
+<input type="text" id="address" placeholder="Address" required>
+
+<button onclick="register()">Submit</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+function register(){
+
+    const data = {
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        dob: document.getElementById("dob").value,
+        gender: document.getElementById("gender").value,
+        address: document.getElementById("address").value
+    };
+
+    fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        document.getElementById("result").innerHTML =
+            "Registration Successful!<br>S.K Card Number: " +
+            result.sk_card_number;
+    })
+    .catch(error => {
+        alert("Error connecting to server");
+    });
+}
+</script>
+
+</body>
+</html>
