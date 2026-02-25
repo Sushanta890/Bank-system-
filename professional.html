@@ -4,6 +4,7 @@
 <title>S.K Bank Professional Dashboard</title>
 
 <style>
+
 body{
 font-family:Arial;
 background:linear-gradient(135deg,#11998e,#38ef7d);
@@ -11,6 +12,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
+margin:0;
 }
 
 .profile{
@@ -24,17 +26,34 @@ box-shadow:0 0 25px rgba(0,0,0,0.3);
 
 h2{
 color:#1e3c72;
+margin-bottom:5px;
+}
+
+.status{
+margin-bottom:15px;
 }
 
 button{
 width:100%;
 padding:12px;
-margin-top:15px;
-background:red;
-color:white;
+margin-top:10px;
 border:none;
 cursor:pointer;
+border-radius:8px;
+font-size:15px;
 }
+
+.profileBtn{background:#1e3c72;color:white;}
+.balanceBtn{background:#0ea5a7;color:white;}
+.transferBtn{background:#2563eb;color:white;}
+.historyBtn{background:#7c3aed;color:white;}
+.chartBtn{background:#059669;color:white;}
+.logoutBtn{background:red;color:white;}
+
+button:hover{
+opacity:0.9;
+}
+
 </style>
 
 </head>
@@ -44,24 +63,75 @@ cursor:pointer;
 
 <h2>Welcome Sushanta</h2>
 
-<p>Professional Page Loaded Successfully</p>
+<p class="status">
+Status: <b style="color:green;">Secure Login Active</b>
+</p>
 
-<p>Status: <b style="color:green;">Secure Login Active</b></p>
+<button class="profileBtn" onclick="openProfile()">Approved</button>
 
-<button onclick="logout()">Logout</button>
+
+<button class="transferBtn" onclick="transfer()">Deposit Money</button>
+
+<button class="historyBtn" onclick="transactions()">S.K Bank Transfer System</button>
+
+<button class="chartBtn" onclick="charts()">Charts Dashboard</button>
+
+<button class="logoutBtn" onclick="logout()">Logout</button>
 
 </div>
 
 <script>
 
-// check login
+// LOGIN CHECK
 if(localStorage.getItem("sk_login")!="true"){
 window.location.href="setup.html";
 }
 
+
+// PROFILE PAGE
+function openProfile(){
+window.location.href="Bank/Bank system/admin.html";
+}
+
+
+// BALANCE CHECK
+function checkBalance(){
+
+let user=JSON.parse(localStorage.getItem("loggedUser"));
+
+let users=JSON.parse(localStorage.getItem("skUsers"))||[];
+
+let current=users.find(u=>u.account===user.account);
+
+alert("Your Balance: ₹"+(current.balance||0));
+
+}
+
+
+// TRANSFER PAGE
+function transfer(){
+window.location.href="Bank/Bank balance transaction/deposit.html";
+}
+
+
+// TRANSACTION PAGE
+function transactions(){
+window.location.href="Bank/Bank balance transaction/transfer.html";
+}
+
+
+// CHART PAGE
+function charts(){
+window.location.href="Bank/translation/transaction.html";
+}
+
+
+// LOGOUT
 function logout(){
 
 localStorage.removeItem("sk_login");
+
+alert("Logged out successfully");
 
 window.location.href="setup.html";
 
