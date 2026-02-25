@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K Bank Dashboard</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+text-align:center;
+}
+
+.card{
+background:white;
+color:black;
+width:350px;
+margin:auto;
+padding:20px;
+border-radius:10px;
+margin-top:20px;
+}
+
+button{
+padding:10px;
+margin:5px;
+background:#1e3c72;
+color:white;
+border:none;
+cursor:pointer;
+width:200px;
+}
+
+.logout{
+background:#dc2626;
+}
+
+.history{
+background:white;
+color:black;
+width:350px;
+margin:auto;
+padding:15px;
+border-radius:10px;
+margin-top:20px;
+text-align:left;
+max-height:300px;
+overflow:auto;
+}
+
+</style>
+
+</head>
+<body>
+
+<h2>S.K Bank Dashboard</h2>
+
+<div class="card" id="profile"></div>
+
+<button onclick="transferMoney()">Transfer Balance</button>
+
+<button class="logout" onclick="logout()">Logout</button>
+
+<div class="history" id="history"></div>
+
+<script>
+
+// CHECK LOGIN
+let loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+
+if(!loggedUser){
+alert("Please login first");
+location.href="login.html";
+}
+
+
+// LOAD USERS
+let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+
+let current = users.find(u=>u.account===loggedUser.account);
+
+if(!current.balance){
+current.balance=0;
+}
+
+
+// SHOW PROFILE
+function loadProfile(){
+
+document.getElementById("profile").innerHTML=`
+
+<b>Name:</b> ${current.fname} ${current.lname}<br>
+<b>Gender:</b> ${current.gender}<br>
+<b>DOB:</b> ${current.dob}<br>
+<b>Email:</b> ${current.email}<br>
+<b>Account:</b> ${current.account}<br>
+<b>Customer ID:</b> ${current.customerId}<br>
+<b>Balance:</b> ₹${current.balance}
+
+`;
+
+}
+
+
+// TRANSFER MONEY
+function transferMoney(){
+
+let receiverAcc = prompt("Enter Receiver Account Number");
+
+if(!receiverAcc) return;
+
+let amount = parseFloat(prompt("Enter Amount"));
+
+if(isNaN(amount) || amount<=0){
+alert("Invalid amount");
+return;
+}
+
+let receiver = users.find(u=>u.account===receiverAcc);
+
+if(!receiver){
+alert("Receiver account not found");
+return;
+}
+
+if(current.balance < amount){
+alert("Insufficient balance");
+return;
+}
+
+
+// UPDATE BALANCE
+current.balance -= amount;
+
+if(!receiver.balance){
+receiver.balance=0;
+}
+
+receiver.balance += amount;
+
+
+// SAVE USERS
+localStorage.setItem("skUsers",JSON.stringify(users));
+
+
+// SAVE TRANSACTIONS
+let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
+
+transactions.push({
+account: current.account,
+type: "Transfer Sent",
+amount: amount,
+balance: current.balance,
+to: receiver.account,
+date: new Date().toLocaleString()
+});
+
+transactions.push({
+account: receiver.account,
+type: "Transfer Received",
+amount: amount,
+balance: receiver.balance,
+from: current.account,
+date: new Date().toLocaleString()
+});
+
+localStorage.setItem("skTransactions",JSON.stringify(transactions));
+
+
+alert("Transfer Successful");
+
+loadProfile();
+showHistory();
+
+}
+
+
+
+// SHOW HISTORY AUTO
+function showHistory(){
+
+let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
+
+let html="<h3>Your Transactions</h3>";
+
+let userTransactions = transactions.filter(t=>t.account===current.account);
+
+if(userTransactions.length===0){
+
+html+="No transactions found";
+
+}else{
+
+userTransactions.reverse().forEach(t=>{
+
+html+=`
+
+<b>Type:</b> ${t.type}<br>
+<b>Amount:</b> ₹${t.amount}<br>
+<b>Balance:</b> ₹${t.balance}<br>
+<b>Date:</b> ${t.date}<br>
+<hr>
+
+`;
+
+});
+
+}
+
+document.getElementById("history").innerHTML=html;
+
+}
+
+
+// LOGOUT FUNCTION
+function logout(){
+
+localStorage.removeItem("loggedUser");
+
+alert("Logout successful");
+
+location.href="login.html";
+
+}
+
+
+// AUTO LOAD
+loadProfile();
+showHistory();
+
+</script>
+
+</body>
+</html>

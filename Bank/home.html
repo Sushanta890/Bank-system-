@@ -1,234 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>S.K Bank Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S.K Bank - Home</title>
 
 <style>
-
 body{
-font-family:Arial;
-background:#0f172a;
-color:white;
-text-align:center;
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(to right,#00c6ff,#0072ff);
+    color:white;
+    text-align:center;
+}
+
+/* Header */
+header{
+    background:rgba(0,0,0,0.3);
+    padding:20px;
+    font-size:28px;
+    font-weight:bold;
+    letter-spacing:2px;
+}
+
+/* Card */
+.container{
+    margin-top:40px;
 }
 
 .card{
-background:white;
-color:black;
-width:350px;
-margin:auto;
-padding:20px;
-border-radius:10px;
-margin-top:20px;
+    background:white;
+    color:black;
+    margin:20px auto;
+    padding:20px;
+    width:90%;
+    max-width:400px;
+    border-radius:15px;
+    box-shadow:0 0 15px rgba(0,0,0,0.3);
+    animation:fadeIn 1s;
 }
 
+/* Buttons */
 button{
-padding:10px;
-margin:5px;
-background:#1e3c72;
-color:white;
-border:none;
-cursor:pointer;
-width:200px;
+    width:100%;
+    padding:15px;
+    margin:10px 0;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    background:linear-gradient(to right,#0072ff,#00c6ff);
+    color:white;
+    transition:0.3s;
 }
 
-.logout{
-background:#dc2626;
+button:hover{
+    transform:scale(1.05);
 }
 
-.history{
-background:white;
-color:black;
-width:350px;
-margin:auto;
-padding:15px;
-border-radius:10px;
-margin-top:20px;
-text-align:left;
-max-height:300px;
-overflow:auto;
+/* Footer */
+footer{
+    margin-top:40px;
+    padding:10px;
+    background:rgba(0,0,0,0.3);
 }
 
+/* Animation */
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(20px);}
+    to{opacity:1; transform:translateY(0);}
+}
 </style>
 
 </head>
 <body>
 
-<h2>S.K Bank Dashboard</h2>
+<header>
+🏦 S.K BANK
+</header>
 
-<div class="card" id="profile"></div>
+<div class="container">
 
-<button onclick="transferMoney()">Transfer Balance</button>
+<div class="card">
+<h2>Welcome to S.K Bank</h2>
 
-<button class="logout" onclick="logout()">Logout</button>
+<button onclick="openPage('open-account.html')">Open Account</button>
 
-<div class="history" id="history"></div>
+<button onclick="openPage('balance.html')">Balance Check</button>
+
+<button onclick="openPage('deposit.html')">Deposit Money</button>
+
+<button onclick="openPage('withdraw.html')">Withdraw Money</button>
+
+<button onclick="openPage('transaction.html')">Transaction History</button>
+
+</div>
+
+</div>
+
+<footer>
+© 2026 S.K Bank | Secure Banking System
+</footer>
 
 <script>
-
-// CHECK LOGIN
-let loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
-
-if(!loggedUser){
-alert("Please login first");
-location.href="login.html";
+function openPage(page){
+    window.location.href = page;
 }
-
-
-// LOAD USERS
-let users = JSON.parse(localStorage.getItem("skUsers")) || [];
-
-let current = users.find(u=>u.account===loggedUser.account);
-
-if(!current.balance){
-current.balance=0;
-}
-
-
-// SHOW PROFILE
-function loadProfile(){
-
-document.getElementById("profile").innerHTML=`
-
-<b>Name:</b> ${current.fname} ${current.lname}<br>
-<b>Gender:</b> ${current.gender}<br>
-<b>DOB:</b> ${current.dob}<br>
-<b>Email:</b> ${current.email}<br>
-<b>Account:</b> ${current.account}<br>
-<b>Customer ID:</b> ${current.customerId}<br>
-<b>Balance:</b> ₹${current.balance}
-
-`;
-
-}
-
-
-// TRANSFER MONEY
-function transferMoney(){
-
-let receiverAcc = prompt("Enter Receiver Account Number");
-
-if(!receiverAcc) return;
-
-let amount = parseFloat(prompt("Enter Amount"));
-
-if(isNaN(amount) || amount<=0){
-alert("Invalid amount");
-return;
-}
-
-let receiver = users.find(u=>u.account===receiverAcc);
-
-if(!receiver){
-alert("Receiver account not found");
-return;
-}
-
-if(current.balance < amount){
-alert("Insufficient balance");
-return;
-}
-
-
-// UPDATE BALANCE
-current.balance -= amount;
-
-if(!receiver.balance){
-receiver.balance=0;
-}
-
-receiver.balance += amount;
-
-
-// SAVE USERS
-localStorage.setItem("skUsers",JSON.stringify(users));
-
-
-// SAVE TRANSACTIONS
-let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
-
-transactions.push({
-account: current.account,
-type: "Transfer Sent",
-amount: amount,
-balance: current.balance,
-to: receiver.account,
-date: new Date().toLocaleString()
-});
-
-transactions.push({
-account: receiver.account,
-type: "Transfer Received",
-amount: amount,
-balance: receiver.balance,
-from: current.account,
-date: new Date().toLocaleString()
-});
-
-localStorage.setItem("skTransactions",JSON.stringify(transactions));
-
-
-alert("Transfer Successful");
-
-loadProfile();
-showHistory();
-
-}
-
-
-
-// SHOW HISTORY AUTO
-function showHistory(){
-
-let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
-
-let html="<h3>Your Transactions</h3>";
-
-let userTransactions = transactions.filter(t=>t.account===current.account);
-
-if(userTransactions.length===0){
-
-html+="No transactions found";
-
-}else{
-
-userTransactions.reverse().forEach(t=>{
-
-html+=`
-
-<b>Type:</b> ${t.type}<br>
-<b>Amount:</b> ₹${t.amount}<br>
-<b>Balance:</b> ₹${t.balance}<br>
-<b>Date:</b> ${t.date}<br>
-<hr>
-
-`;
-
-});
-
-}
-
-document.getElementById("history").innerHTML=html;
-
-}
-
-
-// LOGOUT FUNCTION
-function logout(){
-
-localStorage.removeItem("loggedUser");
-
-alert("Logout successful");
-
-location.href="login.html";
-
-}
-
-
-// AUTO LOAD
-loadProfile();
-showHistory();
-
 </script>
 
 </body>
