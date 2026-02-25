@@ -1,61 +1,189 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>S.K Bank Home</title>
-    <style>
-        body{
-            font-family: Arial;
-            background: linear-gradient(to right, #000428, #004e92);
-            color: white;
-            text-align: center;
-        }
-        .card{
-            background: white;
-            color: black;
-            width: 400px;
-            margin: auto;
-            padding: 20px;
-            border-radius: 15px;
-        }
-        .signature{
-            font-size: 28px;
-            font-weight: bold;
-            margin-top: 20px;
-            animation: glow 2s infinite alternate;
-        }
-        @keyframes glow{
-            from{ color: #004e92; }
-            to{ color: #00f2ff; text-shadow: 0 0 20px #00f2ff; }
-        }
-    </style>
+<title>S.K Bank Home</title>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+text-align:center;
+}
+
+.card{
+background:white;
+color:black;
+width:350px;
+margin:auto;
+padding:20px;
+border-radius:10px;
+animation:fade 1s;
+}
+
+button{
+padding:10px;
+margin:5px;
+background:#1e3c72;
+color:white;
+border:none;
+}
+
+</style>
+
 </head>
 <body>
 
-<h2>Welcome to S.K Bank</h2>
+<h2>S.K Bank Dashboard</h2>
 
-<div class="card" id="details"></div>
+<div class="card" id="profile"></div>
 
-<div class="signature">
-    SUSHANTA KALAKA
-</div>
+<button onclick="transferPage()">Transfer Balance</button>
+
+<button onclick="window.location='atm.html'">ATM Card</button>
+
+<button onclick="generateQR()">Generate QR</button>
+
+<button onclick="showHistory()">Transactions</button>
+
+<div id="qr"></div>
+
+<div id="history"></div>
 
 <script>
-const user = JSON.parse(localStorage.getItem("skUser"));
 
-if(user){
-    document.getElementById("details").innerHTML = `
-        <h3>${user.fname} ${user.lname}</h3>
-        <p><b>Date of Birth:</b> ${user.dob}</p>
-        <p><b>Gender:</b> ${user.gender}</p>
-        <p><b>Email:</b> ${user.email}</p>
-        <p><b>Mobile:</b> ${user.mobile}</p>
-        <p><b>Address:</b> ${user.address}</p>
-        <p><b>S.K Account No:</b> ${user.account}</p>
-        <p><b>Customer ID:</b> ${user.customerId}</p>
-    `;
-}else{
-    window.location.href = "login.html";
+let user=JSON.parse(localStorage.getItem("loggedUser"));
+
+let users=JSON.parse(localStorage.getItem("skUsers"))||[];
+
+let current=users.find(u=>u.account==user.account);
+
+if(!current.balance) current.balance=0;
+
+document.getElementById("profile").innerHTML=`
+
+Name: ${current.fname} ${current.lname}<br>
+
+Gender: ${current.gender}<br>
+
+DOB: ${current.dob}<br>
+
+Email: ${current.email}<br>
+
+Account: ${current.account}<br>
+
+Customer ID: ${current.customerId}<br>
+
+Balance: ₹${current.balance}
+
+`;
+
+
+// Transfer
+function transferPage(){
+
+let to=prompt("Enter Transfer Account Number");
+
+let amount=parseFloat(prompt("Enter Amount"));
+
+let receiver=users.find(u=>u.account==to);
+
+if(!receiver){
+
+alert("Account not found");
+
+return;
+
 }
+
+if(current.balance<amount){
+
+alert("Insufficient balance");
+
+return;
+
+}
+
+current.balance-=amount;
+
+receiver.balance=(receiver.balance||0)+amount;
+
+
+// save history
+
+let history=JSON.parse(localStorage.getItem("skHistory"))||[];
+
+history.push({
+
+from:current.account,
+
+to:receiver.account,
+
+amount:amount,
+
+date:new Date().toLocaleString()
+
+});
+
+localStorage.setItem("skHistory",JSON.stringify(history));
+
+localStorage.setItem("skUsers",JSON.stringify(users));
+
+alert("Transfer successful");
+
+location.reload();
+
+}
+
+
+// QR
+function generateQR(){
+
+document.getElementById("qr").innerHTML="";
+
+QRCode.toCanvas(current.account,function(err,canvas){
+
+document.getElementById("qr").appendChild(canvas);
+
+});
+
+}
+
+
+// History
+function showHistory(){
+
+let history=JSON.parse(localStorage.getItem("skHistory"))||[];
+
+let html="<h3>Transactions</h3>";
+
+history.forEach(h=>{
+
+if(h.from==current.account || h.to==current.account){
+
+html+=`
+
+From: ${h.from}<br>
+
+To: ${h.to}<br>
+
+Amount: ₹${h.amount}<br>
+
+Date: ${h.date}<br><hr>
+
+`;
+
+}
+
+});
+
+document.getElementById("history").innerHTML=html;
+
+}
+
 </script>
 
 </body>

@@ -1,61 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>S.K Bank Login</title>
-    <style>
-        body{
-            font-family: Arial;
-            background: linear-gradient(to right, #141e30, #243b55);
-            text-align: center;
-            color: white;
-        }
-        .box{
-            background: white;
-            color: black;
-            width: 300px;
-            margin: auto;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        input{
-            width: 90%;
-            padding: 8px;
-            margin: 5px;
-        }
-        button{
-            padding: 10px;
-            background: #243b55;
-            color: white;
-            border: none;
-        }
-    </style>
+<title>S.K Bank Login</title>
+<style>
+body{
+font-family:Arial;
+background:#1e3c72;
+color:white;
+text-align:center;
+padding-top:100px;
+}
+.box{
+background:white;
+color:black;
+width:350px;
+margin:auto;
+padding:20px;
+border-radius:10px;
+animation:fade 1s;
+}
+input,button{
+width:90%;
+padding:10px;
+margin:5px;
+}
+button{
+background:#1e3c72;
+color:white;
+border:none;
+}
+@keyframes fade{
+from{opacity:0;}
+to{opacity:1;}
+}
+</style>
 </head>
 <body>
 
 <h2>S.K Bank Login</h2>
 
 <div class="box">
-    <input type="text" id="account" placeholder="S.K Account Number" required><br>
-    <input type="text" id="customerId" placeholder="Customer ID" required><br>
-    <button onclick="login()">Login</button>
+
+<input type="text" id="mobile" placeholder="Mobile Number">
+
+<input type="text" id="account" placeholder="Account Number">
+
+<button onclick="login()">Login</button>
+
 </div>
 
 <script>
+
 function login(){
-    const user = JSON.parse(localStorage.getItem("skUser"));
 
-    if(!user){
-        alert("No Registered User Found!");
-        return;
-    }
+let mobile=document.getElementById("mobile").value;
+let account=document.getElementById("account").value;
 
-    if(account.value === user.account && customerId.value === user.customerId){
-        alert("Login Successful");
-        window.location.href = "home.html";
-    } else {
-        alert("Invalid Account Number or Customer ID");
-    }
+let users=JSON.parse(localStorage.getItem("skUsers"))||[];
+
+let user=users.find(u=>u.mobile==mobile && u.account==account);
+
+if(user){
+
+localStorage.setItem("loggedUser",JSON.stringify(user));
+
+window.location="home.html";
+
 }
+
+else{
+
+alert("Invalid login");
+
+}
+
+}
+
 </script>
 
 </body>
