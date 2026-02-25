@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>S.K Bank Advanced Charts</title>
+<title>S.K Bank Advanced Chart Dashboard</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+
 body{
 font-family:Arial;
 background:#0f172a;
 color:white;
 text-align:center;
+}
+
+.header{
+background:#1e3c72;
+padding:15px;
+font-size:20px;
 }
 
 .chart-box{
@@ -21,18 +29,32 @@ margin:10px;
 padding:15px;
 border-radius:10px;
 }
+
+.info{
+background:white;
+color:black;
+width:300px;
+margin:auto;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
 </style>
 
 </head>
 <body>
 
-<h2>S.K Bank Full Chart Dashboard</h2>
+<div class="header">
+S.K Bank Advanced Chart Dashboard
+</div>
+
+<div class="info" id="userInfo"></div>
 
 <div class="chart-box"><canvas id="columnChart"></canvas></div>
 <div class="chart-box"><canvas id="clusterColumnChart"></canvas></div>
 <div class="chart-box"><canvas id="stackedColumnChart"></canvas></div>
 <div class="chart-box"><canvas id="barChart"></canvas></div>
-<div class="chart-box"><canvas id="clusterBarChart"></canvas></div>
 <div class="chart-box"><canvas id="stackedBarChart"></canvas></div>
 <div class="chart-box"><canvas id="areaChart"></canvas></div>
 <div class="chart-box"><canvas id="donutChart"></canvas></div>
@@ -43,10 +65,39 @@ border-radius:10px;
 
 <script>
 
-// Sample Data
-let labels=["Jan","Feb","Mar","Apr","May"];
-let approved=[12,19,8,15,10];
-let pending=[5,7,3,6,4];
+// LOAD USER
+let loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
+
+let current = users.find(u=>u.account===loggedUser.account);
+
+document.getElementById("userInfo").innerHTML=
+`
+Name: ${current.fname} ${current.lname}<br>
+Account: ${current.account}<br>
+Balance: ₹${current.balance || 0}
+`;
+
+
+// FILTER USER TRANSACTIONS
+let userTx = transactions.filter(t=>t.account===current.account);
+
+
+// COUNT TYPES
+let deposit=0, withdraw=0, transfer=0;
+
+userTx.forEach(t=>{
+if(t.type.includes("Deposit")) deposit+=t.amount;
+if(t.type.includes("Withdraw")) withdraw+=t.amount;
+if(t.type.includes("Transfer")) transfer+=t.amount;
+});
+
+
+// LABELS
+let labels=userTx.map(t=>t.date);
+let amounts=userTx.map(t=>t.amount);
+let balances=userTx.map(t=>t.balance);
 
 
 // COLUMN CHART
@@ -55,8 +106,8 @@ type:'bar',
 data:{
 labels:labels,
 datasets:[{
-label:'Approved',
-data:approved,
+label:'Transaction Amount',
+data:amounts,
 backgroundColor:'green'
 }]
 }
@@ -67,19 +118,12 @@ backgroundColor:'green'
 new Chart(clusterColumnChart,{
 type:'bar',
 data:{
-labels:labels,
-datasets:[
-{
-label:'Approved',
-data:approved,
-backgroundColor:'green'
-},
-{
-label:'Pending',
-data:pending,
-backgroundColor:'orange'
-}
-]
+labels:["Deposit","Withdraw","Transfer"],
+datasets:[{
+label:'Amount',
+data:[deposit,withdraw,transfer],
+backgroundColor:['green','red','blue']
+}]
 }
 });
 
@@ -88,25 +132,27 @@ backgroundColor:'orange'
 new Chart(stackedColumnChart,{
 type:'bar',
 data:{
-labels:labels,
+labels:["Transactions"],
 datasets:[
 {
-label:'Approved',
-data:approved,
+label:'Deposit',
+data:[deposit],
 backgroundColor:'green'
 },
 {
-label:'Pending',
-data:pending,
-backgroundColor:'orange'
+label:'Withdraw',
+data:[withdraw],
+backgroundColor:'red'
+},
+{
+label:'Transfer',
+data:[transfer],
+backgroundColor:'blue'
 }
 ]
 },
 options:{
-scales:{
-x:{stacked:true},
-y:{stacked:true}
-}
+scales:{x:{stacked:true},y:{stacked:true}}
 }
 });
 
@@ -115,40 +161,13 @@ y:{stacked:true}
 new Chart(barChart,{
 type:'bar',
 data:{
-labels:["Approved","Pending"],
+labels:["Deposit","Withdraw","Transfer"],
 datasets:[{
-label:'Users',
-data:[64,25],
-backgroundColor:['green','orange']
+data:[deposit,withdraw,transfer],
+backgroundColor:['green','red','blue']
 }]
 },
-options:{
-indexAxis:'y'
-}
-});
-
-
-// CLUSTERED BAR
-new Chart(clusterBarChart,{
-type:'bar',
-data:{
-labels:labels,
-datasets:[
-{
-label:'Approved',
-data:approved,
-backgroundColor:'green'
-},
-{
-label:'Pending',
-data:pending,
-backgroundColor:'orange'
-}
-]
-},
-options:{
-indexAxis:'y'
-}
+options:{indexAxis:'y'}
 });
 
 
@@ -156,26 +175,16 @@ indexAxis:'y'
 new Chart(stackedBarChart,{
 type:'bar',
 data:{
-labels:labels,
+labels:["Total"],
 datasets:[
-{
-label:'Approved',
-data:approved,
-backgroundColor:'green'
-},
-{
-label:'Pending',
-data:pending,
-backgroundColor:'orange'
-}
+{label:'Deposit',data:[deposit],backgroundColor:'green'},
+{label:'Withdraw',data:[withdraw],backgroundColor:'red'},
+{label:'Transfer',data:[transfer],backgroundColor:'blue'}
 ]
 },
 options:{
 indexAxis:'y',
-scales:{
-x:{stacked:true},
-y:{stacked:true}
-}
+scales:{x:{stacked:true},y:{stacked:true}}
 }
 });
 
@@ -186,11 +195,11 @@ type:'line',
 data:{
 labels:labels,
 datasets:[{
-label:'Approved',
-data:approved,
+label:'Balance',
+data:balances,
+fill:true,
 backgroundColor:'rgba(0,255,0,0.3)',
-borderColor:'green',
-fill:true
+borderColor:'green'
 }]
 }
 });
@@ -200,10 +209,10 @@ fill:true
 new Chart(donutChart,{
 type:'doughnut',
 data:{
-labels:["Approved","Pending"],
+labels:["Deposit","Withdraw","Transfer"],
 datasets:[{
-data:[64,25],
-backgroundColor:['green','orange']
+data:[deposit,withdraw,transfer],
+backgroundColor:['green','red','blue']
 }]
 }
 });
@@ -213,39 +222,40 @@ backgroundColor:['green','orange']
 new Chart(pieChart,{
 type:'pie',
 data:{
-labels:["Approved","Pending"],
+labels:["Deposit","Withdraw","Transfer"],
 datasets:[{
-data:[64,25],
-backgroundColor:['green','orange']
+data:[deposit,withdraw,transfer],
+backgroundColor:['green','red','blue']
 }]
 }
 });
 
 
 // HISTOGRAM
-let histData=[2,4,5,7,8,10,12,13,15,18];
-
 new Chart(histogramChart,{
 type:'bar',
 data:{
-labels:histData,
+labels:amounts,
 datasets:[{
-label:'Distribution',
-data:histData,
-backgroundColor:'blue'
+label:'Amount Distribution',
+data:amounts,
+backgroundColor:'orange'
 }]
 }
 });
 
 
-// GAUGE CHART (using doughnut)
+// GAUGE CHART
+let balance=current.balance || 0;
+let max=100000;
+
 new Chart(gaugeChart,{
 type:'doughnut',
 data:{
-labels:["Used","Free"],
+labels:["Balance","Remaining"],
 datasets:[{
-data:[70,30],
-backgroundColor:['red','gray']
+data:[balance,max-balance],
+backgroundColor:['green','gray']
 }]
 },
 options:{
@@ -264,19 +274,19 @@ type:'line',
 data:{
 labels:liveLabels,
 datasets:[{
-label:'Live Users',
+label:'Live Transaction',
 data:liveData,
-borderColor:'cyan',
-fill:false
+borderColor:'cyan'
 }]
 }
 });
 
 setInterval(()=>{
+
 let time=new Date().toLocaleTimeString();
 
 liveLabels.push(time);
-liveData.push(Math.floor(Math.random()*100));
+liveData.push(Math.floor(Math.random()*balance));
 
 if(liveLabels.length>10){
 liveLabels.shift();
@@ -286,7 +296,6 @@ liveData.shift();
 liveChartObj.update();
 
 },2000);
-
 
 </script>
 
