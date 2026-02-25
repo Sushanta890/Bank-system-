@@ -37,7 +37,7 @@ body{
     to{opacity:1; transform:translateY(0);}
 }
 
-input{
+input, select{
     padding:8px;
     width:100%;
     margin-bottom:10px;
@@ -52,26 +52,27 @@ button{
     background:#1f4037;
     color:white;
     cursor:pointer;
+    margin-right:5px;
 }
 
 button:hover{
     background:#14532d;
 }
 
-.user{
-    background:#f4f4f4;
-    padding:10px;
-    border-radius:8px;
-    margin-top:8px;
-}
-
 .delete{
     background:red;
-    margin-top:5px;
 }
 .delete:hover{
     background:darkred;
 }
+
+.edit{
+    background:orange;
+}
+.edit:hover{
+    background:darkorange;
+}
+
 .count{
     font-weight:bold;
     margin-bottom:10px;
@@ -101,57 +102,122 @@ button:hover{
 
 <script>
 
+let editIndex = null;
+
 function loadUsers(){
 
     let users = JSON.parse(localStorage.getItem("skUsers")) || [];
-    document.getElementById("userList").innerHTML = "";
-    document.getElementById("totalUsers").innerHTML =
-        "Total Registered Users: " + users.length;
+
+    let userList = document.getElementById("userList");
+    let totalUsers = document.getElementById("totalUsers");
+
+    if(!userList || !totalUsers) return;
+
+    userList.innerHTML = "";
+    totalUsers.innerHTML = "Total Registered Users: " + users.length;
 
     users.forEach((user,index)=>{
 
-        document.getElementById("userList").innerHTML += `
-            <div class="card user">
+        userList.innerHTML += `
+            <div class="card">
                 <p><b>S.K Number:</b> ${user.skNumber}</p>
                 <p><b>Name:</b> ${user.fullName}</p>
+                <p><b>Gender:</b> ${user.gender || "-"}</p>
                 <p><b>DOB:</b> ${user.dob || "-"}</p>
+                <p><b>Village/Town:</b> ${user.village || "-"}</p>
+                <p><b>District:</b> ${user.district || "-"}</p>
+                <p><b>State:</b> ${user.state || "-"}</p>
                 <p><b>Mobile:</b> ${user.mobile}</p>
                 <p><b>Email:</b> ${user.email}</p>
-                <button class="delete" onclick="deleteUser(${index})">
-                Delete</button>
+
+                <button class="edit" onclick="editUser(${index})">Edit</button>
+                <button class="delete" onclick="deleteUser(${index})">Delete</button>
             </div>
         `;
     });
 }
 
 function deleteUser(index){
-
     let users = JSON.parse(localStorage.getItem("skUsers")) || [];
     users.splice(index,1);
     localStorage.setItem("skUsers", JSON.stringify(users));
     loadUsers();
 }
 
+function editUser(index){
+
+    let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+    let user = users[index];
+    editIndex = index;
+
+    document.getElementById("userList").innerHTML = `
+        <div class="card">
+            <h3>Edit Full Details</h3>
+
+            <input type="text" id="editName" value="${user.fullName}" placeholder="Full Name">
+
+            <select id="editGender">
+                <option value="Male" ${user.gender==="Male"?"selected":""}>Male</option>
+                <option value="Female" ${user.gender==="Female"?"selected":""}>Female</option>
+            </select>
+
+            <input type="date" id="editDob" value="${user.dob || ""}">
+            <input type="text" id="editVillage" value="${user.village || ""}" placeholder="Village/Town/City">
+            <input type="text" id="editDistrict" value="${user.district || ""}" placeholder="District">
+            <input type="text" id="editState" value="${user.state || ""}" placeholder="State">
+            <input type="text" id="editMobile" value="${user.mobile}" placeholder="Mobile">
+            <input type="email" id="editEmail" value="${user.email}" placeholder="Email">
+
+            <button onclick="updateUser()">Update</button>
+            <button onclick="loadUsers()">Cancel</button>
+        </div>
+    `;
+}
+
+function updateUser(){
+
+    let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+
+    users[editIndex].fullName = document.getElementById("editName").value;
+    users[editIndex].gender = document.getElementById("editGender").value;
+    users[editIndex].dob = document.getElementById("editDob").value;
+    users[editIndex].village = document.getElementById("editVillage").value;
+    users[editIndex].district = document.getElementById("editDistrict").value;
+    users[editIndex].state = document.getElementById("editState").value;
+    users[editIndex].mobile = document.getElementById("editMobile").value;
+    users[editIndex].email = document.getElementById("editEmail").value;
+
+    localStorage.setItem("skUsers", JSON.stringify(users));
+
+    editIndex = null;
+    loadUsers();
+}
+
 function searchUser(){
 
-    let search = document.getElementById("searchMobile").value;
+    let search = document.getElementById("searchMobile").value.trim();
     let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+
     let result = users.filter(user => user.mobile === search);
 
-    document.getElementById("userList").innerHTML = "";
+    let userList = document.getElementById("userList");
+    userList.innerHTML = "";
 
     if(result.length === 0){
-        document.getElementById("userList").innerHTML =
-        "<div class='card'>No User Found</div>";
+        userList.innerHTML = "<div class='card'>No User Found</div>";
         return;
     }
 
     result.forEach(user=>{
-        document.getElementById("userList").innerHTML += `
-            <div class="card user">
+        userList.innerHTML += `
+            <div class="card">
                 <p><b>S.K Number:</b> ${user.skNumber}</p>
                 <p><b>Name:</b> ${user.fullName}</p>
+                <p><b>Gender:</b> ${user.gender || "-"}</p>
                 <p><b>DOB:</b> ${user.dob || "-"}</p>
+                <p><b>Village/Town:</b> ${user.village || "-"}</p>
+                <p><b>District:</b> ${user.district || "-"}</p>
+                <p><b>State:</b> ${user.state || "-"}</p>
                 <p><b>Mobile:</b> ${user.mobile}</p>
                 <p><b>Email:</b> ${user.email}</p>
             </div>
@@ -159,7 +225,7 @@ function searchUser(){
     });
 }
 
-loadUsers();
+window.onload = loadUsers;
 
 </script>
 
