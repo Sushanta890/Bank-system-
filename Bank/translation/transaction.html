@@ -19,7 +19,7 @@ text-align:center;
 background:white;
 color:black;
 width:95%;
-max-width:1000px;
+max-width:1100px;
 margin:auto;
 padding:20px;
 border-radius:12px;
@@ -57,6 +57,7 @@ color:white;
 canvas{
 background:white;
 margin-top:20px;
+max-height:300px;
 }
 
 @keyframes fadeIn{
@@ -78,19 +79,19 @@ to{opacity:1}
 
 <button onclick="loadHistory()">Show History</button>
 
+<h3 id="nameText"></h3>
+
 <h3 id="balanceText"></h3>
 
 <table>
 
 <thead>
-
 <tr>
 <th>Date & Time</th>
 <th>Type</th>
 <th>Amount</th>
 <th>Balance</th>
 </tr>
-
 </thead>
 
 <tbody id="historyBody"></tbody>
@@ -101,8 +102,20 @@ to{opacity:1}
 <h3>Pie Chart</h3>
 <canvas id="pieChart"></canvas>
 
+<h3>Donut Chart</h3>
+<canvas id="donutChart"></canvas>
+
 <h3>Column Chart</h3>
 <canvas id="barChart"></canvas>
+
+<h3>Clustered Column Chart</h3>
+<canvas id="clusterChart"></canvas>
+
+<h3>Statistics Chart</h3>
+<canvas id="statsChart"></canvas>
+
+<h3>Gauge Chart</h3>
+<canvas id="gaugeChart"></canvas>
 
 <h3>Balance Line Chart</h3>
 <canvas id="lineChart"></canvas>
@@ -111,7 +124,7 @@ to{opacity:1}
 
 <script>
 
-let pieChart,barChart,lineChart;
+let pieChart, donutChart, barChart, clusterChart, statsChart, gaugeChart, lineChart;
 
 
 // LOAD HISTORY
@@ -128,10 +141,15 @@ let user=users.find(u=>u.account===acc);
 if(!user){
 
 alert("Account not found");
-
 return;
 
 }
+
+
+// SHOW NAME
+document.getElementById("nameText").innerHTML=
+"Account Holder: "+user.fname+" "+user.lname;
+
 
 // SHOW BALANCE
 document.getElementById("balanceText").innerHTML=
@@ -144,7 +162,6 @@ let data=transactions.filter(t=>t.account===acc);
 if(data.length===0){
 
 alert("No transactions found");
-
 return;
 
 }
@@ -158,27 +175,26 @@ body.innerHTML="";
 data.forEach(t=>{
 
 body.innerHTML+=`
-
 <tr>
 <td>${t.date}</td>
 <td>${t.type}</td>
 <td>₹${t.amount}</td>
 <td>₹${t.balance}</td>
 </tr>
-
 `;
 
 });
 
 
 // CREATE CHARTS
-createCharts(data);
+createCharts(data,user.balance);
 
 }
 
 
-// CREATE CHARTS
-function createCharts(data){
+
+// CREATE ALL CHARTS
+function createCharts(data,currentBalance){
 
 let labels=data.map(t=>t.date);
 
@@ -189,63 +205,122 @@ let balances=data.map(t=>t.balance);
 
 // DESTROY OLD
 if(pieChart) pieChart.destroy();
+if(donutChart) donutChart.destroy();
 if(barChart) barChart.destroy();
+if(clusterChart) clusterChart.destroy();
+if(statsChart) statsChart.destroy();
+if(gaugeChart) gaugeChart.destroy();
 if(lineChart) lineChart.destroy();
 
 
-// PIE
-pieChart=new Chart(document.getElementById("pieChart"),{
-
+// PIE CHART
+pieChart=new Chart(pieChartCanvas(),{
 type:"pie",
-
 data:{
 labels:labels,
 datasets:[{
-data:amounts,
-backgroundColor:[
-"green","blue","orange","red","purple"
-]
+data:amounts
 }]
 }
-
 });
 
 
-// BAR
-barChart=new Chart(document.getElementById("barChart"),{
+// DONUT CHART
+donutChart=new Chart(donutChartCanvas(),{
+type:"doughnut",
+data:{
+labels:labels,
+datasets:[{
+data:amounts
+}]
+}
+});
 
+
+// COLUMN CHART
+barChart=new Chart(barChartCanvas(),{
 type:"bar",
-
 data:{
 labels:labels,
 datasets:[{
-label:"Transaction Amount",
-data:amounts,
-backgroundColor:"blue"
+label:"Transactions",
+data:amounts
 }]
 }
-
 });
 
 
-// LINE
-lineChart=new Chart(document.getElementById("lineChart"),{
+// CLUSTERED COLUMN
+clusterChart=new Chart(clusterChartCanvas(),{
+type:"bar",
+data:{
+labels:labels,
+datasets:[
+{
+label:"Amount",
+data:amounts
+},
+{
+label:"Balance",
+data:balances
+}
+]
+}
+});
 
+
+// STATISTICS CHART
+let total=amounts.reduce((a,b)=>a+b,0);
+
+let avg=total/amounts.length;
+
+statsChart=new Chart(statsChartCanvas(),{
+type:"bar",
+data:{
+labels:["Total","Average"],
+datasets:[{
+data:[total,avg]
+}]
+}
+});
+
+
+// GAUGE CHART
+gaugeChart=new Chart(gaugeChartCanvas(),{
+type:"doughnut",
+data:{
+labels:["Balance","Remaining"],
+datasets:[{
+data:[currentBalance,100000-currentBalance]
+}]
+}
+});
+
+
+// LINE CHART
+lineChart=new Chart(lineChartCanvas(),{
 type:"line",
-
 data:{
 labels:labels,
 datasets:[{
-label:"Balance",
+label:"Balance Growth",
 data:balances,
-borderColor:"green",
 fill:true
 }]
 }
-
 });
 
 }
+
+
+// CANVAS FUNCTIONS
+function pieChartCanvas(){return document.getElementById("pieChart");}
+function donutChartCanvas(){return document.getElementById("donutChart");}
+function barChartCanvas(){return document.getElementById("barChart");}
+function clusterChartCanvas(){return document.getElementById("clusterChart");}
+function statsChartCanvas(){return document.getElementById("statsChart");}
+function gaugeChartCanvas(){return document.getElementById("gaugeChart");}
+function lineChartCanvas(){return document.getElementById("lineChart");}
 
 
 </script>

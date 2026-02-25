@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>S.K Bank Home</title>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<title>S.K Bank Dashboard</title>
 
 <style>
 
@@ -21,7 +19,7 @@ width:350px;
 margin:auto;
 padding:20px;
 border-radius:10px;
-animation:fade 1s;
+margin-top:20px;
 }
 
 button{
@@ -30,6 +28,25 @@ margin:5px;
 background:#1e3c72;
 color:white;
 border:none;
+cursor:pointer;
+width:200px;
+}
+
+.logout{
+background:#dc2626;
+}
+
+.history{
+background:white;
+color:black;
+width:350px;
+margin:auto;
+padding:15px;
+border-radius:10px;
+margin-top:20px;
+text-align:left;
+max-height:300px;
+overflow:auto;
 }
 
 </style>
@@ -41,148 +58,176 @@ border:none;
 
 <div class="card" id="profile"></div>
 
-<button onclick="transferPage()">Transfer Balance</button>
+<button onclick="transferMoney()">Transfer Balance</button>
 
-<button onclick="window.location='atm.html'">ATM Card</button>
+<button class="logout" onclick="logout()">Logout</button>
 
-<button onclick="generateQR()">Generate QR</button>
-
-<button onclick="showHistory()">Transactions</button>
-
-<div id="qr"></div>
-
-<div id="history"></div>
+<div class="history" id="history"></div>
 
 <script>
 
-let user=JSON.parse(localStorage.getItem("loggedUser"));
+// CHECK LOGIN
+let loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
 
-let users=JSON.parse(localStorage.getItem("skUsers"))||[];
+if(!loggedUser){
+alert("Please login first");
+location.href="login.html";
+}
 
-let current=users.find(u=>u.account==user.account);
 
-if(!current.balance) current.balance=0;
+// LOAD USERS
+let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+
+let current = users.find(u=>u.account===loggedUser.account);
+
+if(!current.balance){
+current.balance=0;
+}
+
+
+// SHOW PROFILE
+function loadProfile(){
 
 document.getElementById("profile").innerHTML=`
 
-Name: ${current.fname} ${current.lname}<br>
-
-Gender: ${current.gender}<br>
-
-DOB: ${current.dob}<br>
-
-Email: ${current.email}<br>
-
-Account: ${current.account}<br>
-
-Customer ID: ${current.customerId}<br>
-
-Balance: ₹${current.balance}
+<b>Name:</b> ${current.fname} ${current.lname}<br>
+<b>Gender:</b> ${current.gender}<br>
+<b>DOB:</b> ${current.dob}<br>
+<b>Email:</b> ${current.email}<br>
+<b>Account:</b> ${current.account}<br>
+<b>Customer ID:</b> ${current.customerId}<br>
+<b>Balance:</b> ₹${current.balance}
 
 `;
 
+}
 
-// Transfer
-function transferPage(){
 
-let to=prompt("Enter Transfer Account Number");
+// TRANSFER MONEY
+function transferMoney(){
 
-let amount=parseFloat(prompt("Enter Amount"));
+let receiverAcc = prompt("Enter Receiver Account Number");
 
-let receiver=users.find(u=>u.account==to);
+if(!receiverAcc) return;
+
+let amount = parseFloat(prompt("Enter Amount"));
+
+if(isNaN(amount) || amount<=0){
+alert("Invalid amount");
+return;
+}
+
+let receiver = users.find(u=>u.account===receiverAcc);
 
 if(!receiver){
-
-alert("Account not found");
-
+alert("Receiver account not found");
 return;
-
 }
 
-if(current.balance<amount){
-
+if(current.balance < amount){
 alert("Insufficient balance");
-
 return;
-
 }
 
-current.balance-=amount;
 
-receiver.balance=(receiver.balance||0)+amount;
+// UPDATE BALANCE
+current.balance -= amount;
+
+if(!receiver.balance){
+receiver.balance=0;
+}
+
+receiver.balance += amount;
 
 
-// save history
-
-let history=JSON.parse(localStorage.getItem("skHistory"))||[];
-
-history.push({
-
-from:current.account,
-
-to:receiver.account,
-
-amount:amount,
-
-date:new Date().toLocaleString()
-
-});
-
-localStorage.setItem("skHistory",JSON.stringify(history));
-
+// SAVE USERS
 localStorage.setItem("skUsers",JSON.stringify(users));
 
-alert("Transfer successful");
 
-location.reload();
+// SAVE TRANSACTIONS
+let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
 
-}
-
-
-// QR
-function generateQR(){
-
-document.getElementById("qr").innerHTML="";
-
-QRCode.toCanvas(current.account,function(err,canvas){
-
-document.getElementById("qr").appendChild(canvas);
-
+transactions.push({
+account: current.account,
+type: "Transfer Sent",
+amount: amount,
+balance: current.balance,
+to: receiver.account,
+date: new Date().toLocaleString()
 });
 
+transactions.push({
+account: receiver.account,
+type: "Transfer Received",
+amount: amount,
+balance: receiver.balance,
+from: current.account,
+date: new Date().toLocaleString()
+});
+
+localStorage.setItem("skTransactions",JSON.stringify(transactions));
+
+
+alert("Transfer Successful");
+
+loadProfile();
+showHistory();
+
 }
 
 
-// History
+
+// SHOW HISTORY AUTO
 function showHistory(){
 
-let history=JSON.parse(localStorage.getItem("skHistory"))||[];
+let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
 
-let html="<h3>Transactions</h3>";
+let html="<h3>Your Transactions</h3>";
 
-history.forEach(h=>{
+let userTransactions = transactions.filter(t=>t.account===current.account);
 
-if(h.from==current.account || h.to==current.account){
+if(userTransactions.length===0){
+
+html+="No transactions found";
+
+}else{
+
+userTransactions.reverse().forEach(t=>{
 
 html+=`
 
-From: ${h.from}<br>
-
-To: ${h.to}<br>
-
-Amount: ₹${h.amount}<br>
-
-Date: ${h.date}<br><hr>
+<b>Type:</b> ${t.type}<br>
+<b>Amount:</b> ₹${t.amount}<br>
+<b>Balance:</b> ₹${t.balance}<br>
+<b>Date:</b> ${t.date}<br>
+<hr>
 
 `;
 
-}
-
 });
+
+}
 
 document.getElementById("history").innerHTML=html;
 
 }
+
+
+// LOGOUT FUNCTION
+function logout(){
+
+localStorage.removeItem("loggedUser");
+
+alert("Logout successful");
+
+location.href="login.html";
+
+}
+
+
+// AUTO LOAD
+loadProfile();
+showHistory();
 
 </script>
 
