@@ -29,7 +29,11 @@ button{
     cursor:pointer;
 }
 button:hover{background:#0d6efd;}
-.message{color:red;font-size:14px;}
+.message{
+    font-size:14px;
+}
+.error{color:red;}
+.success{color:green;}
 </style>
 </head>
 <body>
@@ -52,11 +56,25 @@ button:hover{background:#0d6efd;}
 
 <script>
 
+// Validate format: SK + 10 digits
 function validateSK(sk){
-    let pattern = /^SK\d{10}$/;   // Example: SK + 10 digits
+    let pattern = /^SK\d{10}$/;
     return pattern.test(sk);
 }
 
+// Check if SK already exists
+function skExists(sk){
+    for(let i=0;i<localStorage.length;i++){
+        let key = localStorage.key(i);
+        let data = JSON.parse(localStorage.getItem(key));
+        if(data && data.skNumber === sk){
+            return true;
+        }
+    }
+    return false;
+}
+
+// Generate EMI & SIM number
 function generateNumber(prefix){
     return prefix + Math.floor(100000000 + Math.random()*900000000);
 }
@@ -64,14 +82,25 @@ function generateNumber(prefix){
 function submitForm(event){
     event.preventDefault();
 
-    let sk = document.getElementById("skNumber").value;
+    let sk = document.getElementById("skNumber").value.trim();
+    let message = document.getElementById("skMessage");
 
+    // 1️⃣ Format check
     if(!validateSK(sk)){
-        document.getElementById("skMessage").innerHTML="Invalid S.K Number Format!";
+        message.innerHTML="Invalid S.K Number Format! (Example: SK2026123456)";
+        message.className="message error";
         return;
     }
 
-    document.getElementById("skMessage").innerHTML="";
+    // 2️⃣ Duplicate check
+    if(skExists(sk)){
+        message.innerHTML="S.K Number Already Registered!";
+        message.className="message error";
+        return;
+    }
+
+    message.innerHTML="S.K Number Valid ✔";
+    message.className="message success";
 
     let emiNumber = generateNumber("EMI");
     let simNumber = generateNumber("SIM");
@@ -93,6 +122,7 @@ function submitForm(event){
 
     window.location.href="home.html";
 }
+
 </script>
 
 </body>
