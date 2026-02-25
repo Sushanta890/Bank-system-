@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>S.K Bank Home</title>
+    <style>
+        body{
+            font-family: Arial;
+            background: linear-gradient(to right, #000428, #004e92);
+            color: white;
+            text-align: center;
+        }
+        .card{
+            background: white;
+            color: black;
+            width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .signature{
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 20px;
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow{
+            from{ color: #004e92; }
+            to{ color: #00f2ff; text-shadow: 0 0 20px #00f2ff; }
+        }
+    </style>
+</head>
+<body>
+
+<h2>Welcome to S.K Bank</h2>
+
+<div class="card" id="details"></div>
+
+<div class="signature">
+    SUSHANTA KALAKA
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("skUser"));
+
+if(user){
+    document.getElementById("details").innerHTML = `
+        <h3>${user.fname} ${user.lname}</h3>
+        <p><b>Date of Birth:</b> ${user.dob}</p>
+        <p><b>Gender:</b> ${user.gender}</p>
+        <p><b>Email:</b> ${user.email}</p>
+        <p><b>Mobile:</b> ${user.mobile}</p>
+        <p><b>Address:</b> ${user.address}</p>
+        <p><b>S.K Account No:</b> ${user.account}</p>
+        <p><b>Customer ID:</b> ${user.customerId}</p>
+    `;
+}else{
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>

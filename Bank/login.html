@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>S.K Bank Login</title>
+    <style>
+        body{
+            font-family: Arial;
+            background: linear-gradient(to right, #141e30, #243b55);
+            text-align: center;
+            color: white;
+        }
+        .box{
+            background: white;
+            color: black;
+            width: 300px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        input{
+            width: 90%;
+            padding: 8px;
+            margin: 5px;
+        }
+        button{
+            padding: 10px;
+            background: #243b55;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>S.K Bank Login</h2>
+
+<div class="box">
+    <input type="text" id="account" placeholder="S.K Account Number" required><br>
+    <input type="text" id="customerId" placeholder="Customer ID" required><br>
+    <button onclick="login()">Login</button>
+</div>
+
+<script>
+function login(){
+    const user = JSON.parse(localStorage.getItem("skUser"));
+
+    if(!user){
+        alert("No Registered User Found!");
+        return;
+    }
+
+    if(account.value === user.account && customerId.value === user.customerId){
+        alert("Login Successful");
+        window.location.href = "home.html";
+    } else {
+        alert("Invalid Account Number or Customer ID");
+    }
+}
+</script>
+
+</body>
+</html>

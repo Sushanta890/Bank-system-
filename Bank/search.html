@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>S.K Bank Mobile Search</title>
+    <style>
+        body { font-family: Arial; background: #141e30; color: white; text-align: center; padding-top: 50px; }
+        .box { background: white; color: black; width: 350px; margin: auto; padding: 20px; border-radius: 12px; }
+        input { width: 90%; padding: 8px; margin: 8px 0; }
+        button { padding: 10px 15px; background: #243b55; color: white; border: none; cursor: pointer; }
+        .result { margin-top: 15px; font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+
+<h2>S.K Bank Mobile Search</h2>
+
+<div class="box">
+    <input type="text" id="mobileInput" placeholder="Enter Mobile Number"><br>
+    <button onclick="searchByMobile()">Search</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+function searchByMobile(){
+    const users = JSON.parse(localStorage.getItem("skUsers")) || [];
+    const mobile = document.getElementById("mobileInput").value.trim();
+    const user = users.find(u => u.mobile===mobile);
+
+    if(!user){
+        document.getElementById("result").innerHTML = "Mobile number not found!";
+    } else if(user.status !== "Approved"){
+        document.getElementById("result").innerHTML = "Account not approved yet!";
+    } else {
+        document.getElementById("result").innerHTML =
+            `S.K Account Number: <b>${user.account}</b><br>` +
+            `Customer ID: <b>${user.customerId}</b>`;
+    }
+}
+</script>
+
+</body>
+</html>
