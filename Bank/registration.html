@@ -3,10 +3,33 @@
 <head>
     <title>S.K Bank Registration</title>
     <style>
-        body { font-family: Arial; background: #1e3c72; color: white; text-align: center; padding-top: 50px; }
-        form { background: white; color: black; width: 350px; padding: 20px; margin: auto; border-radius: 12px; }
-        input, select { width: 90%; padding: 8px; margin: 5px; }
-        button { padding: 10px; background: #1e3c72; color: white; border: none; cursor: pointer; }
+        body { 
+            font-family: Arial; 
+            background: #1e3c72; 
+            color: white; 
+            text-align: center; 
+            padding-top: 50px; 
+        }
+        form { 
+            background: white; 
+            color: black; 
+            width: 350px; 
+            padding: 20px; 
+            margin: auto; 
+            border-radius: 12px; 
+        }
+        input, select { 
+            width: 90%; 
+            padding: 8px; 
+            margin: 5px; 
+        }
+        button { 
+            padding: 10px; 
+            background: #1e3c72; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body>
@@ -23,17 +46,25 @@
         <option>Female</option>
     </select><br>
     <input type="email" id="email" placeholder="Email" required><br>
-    <input type="tel" id="mobile" placeholder="Mobile Number" required><br>
+    <input type="tel" id="mobile" placeholder="Mobile Number" required pattern="\d{10}" title="Enter a 10-digit mobile number"><br>
     <button type="submit">Register</button>
 </form>
 
 <script>
-function generateAccountNumber(){ return "SK"+Math.floor(100000000+Math.random()*900000000); }
-function generateCustomerID(){ return "CUST"+Math.floor(10000+Math.random()*90000); }
+function generateAccountNumber(){
+    return "SK"+Math.floor(100000000 + Math.random()*900000000);
+}
+
+function generateCustomerID(){
+    return "CUST"+Math.floor(10000 + Math.random()*90000);
+}
+
 function generateAddress(){
     const streets = ["Main Road","Temple Street","Station Road","Lake View","Market Area"];
     const cities = ["Bhubaneswar","Cuttack","Puri","Delhi","Mumbai"];
-    return Math.floor(Math.random()*100)+", "+streets[Math.floor(Math.random()*streets.length)]+", "+cities[Math.floor(Math.random()*cities.length)];
+    return Math.floor(Math.random()*100) + ", " + 
+           streets[Math.floor(Math.random()*streets.length)] + ", " + 
+           cities[Math.floor(Math.random()*cities.length)];
 }
 
 function register(event){
@@ -41,24 +72,32 @@ function register(event){
 
     let users = JSON.parse(localStorage.getItem("skUsers")) || [];
 
+    const mobileInput = document.getElementById("mobile").value.trim();
+
+    // Validate 10-digit mobile
+    if(!/^\d{10}$/.test(mobileInput)){
+        alert("Mobile number must be exactly 10 digits!");
+        return;
+    }
+
     // Check duplicate mobile
-    const existing = users.find(u => u.mobile === document.getElementById("mobile").value.trim());
+    const existing = users.find(u => u.mobile === mobileInput);
     if(existing){
         alert("Mobile number already registered!");
         return;
     }
 
     const user = {
-        fname: fname.value,
-        lname: lname.value,
-        dob: dob.value,
-        gender: gender.value,
-        email: email.value,
-        mobile: mobile.value,
+        fname: document.getElementById("fname").value,
+        lname: document.getElementById("lname").value,
+        dob: document.getElementById("dob").value,
+        gender: document.getElementById("gender").value,
+        email: document.getElementById("email").value,
+        mobile: mobileInput,
         account: generateAccountNumber(),
         customerId: generateCustomerID(),
         address: generateAddress(),
-        status: "Pending" // <-- NEW: Pending approval
+        status: "Pending" // Pending approval
     };
 
     users.push(user);

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>S.K Bank Approval Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial; 
+            background: #1e1e2f; 
+            color: white; 
+            text-align: center; 
+            padding: 20px; 
+        }
+        h2 { margin-bottom: 20px; }
+        .chart-container {
+            width: 45%;
+            display: inline-block;
+            background: white;
+            color: black;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+<h2>S.K Bank Approval Statistics</h2>
+
+<div class="chart-container">
+    <canvas id="pieChart"></canvas>
+</div>
+<div class="chart-container">
+    <canvas id="doughnutChart"></canvas>
+</div>
+<div class="chart-container">
+    <canvas id="barChart"></canvas>
+</div>
+<div class="chart-container">
+    <canvas id="lineChart"></canvas>
+</div>
+<div class="chart-container">
+    <canvas id="polarChart"></canvas>
+</div>
+<div class="chart-container">
+    <canvas id="radarChart"></canvas>
+</div>
+
+<script>
+// Sample data from localStorage (or create dummy if empty)
+let users = JSON.parse(localStorage.getItem("skUsers")) || [
+    {status:"Approved"},{status:"Pending"},{status:"Approved"},
+    {status:"Pending"},{status:"Approved"}
+];
+
+const approvedCount = users.filter(u => u.status === "Approved").length;
+const pendingCount = users.filter(u => u.status === "Pending").length;
+
+const labels = ['Approved','Pending'];
+const data = [approvedCount, pendingCount];
+const colors = ['#28a745','#ffc107'];
+
+// Pie Chart
+const pieChart = new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: { labels: labels, datasets:[{data: data, backgroundColor: colors}] },
+    options: { responsive:true, animation:{animateRotate:true,animateScale:true} }
+});
+
+// Doughnut Chart
+const doughnutChart = new Chart(document.getElementById('doughnutChart'), {
+    type: 'doughnut',
+    data: { labels: labels, datasets:[{data: data, backgroundColor: colors}] },
+    options: { responsive:true, animation:{animateRotate:true,animateScale:true} }
+});
+
+// Bar Chart
+const barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: { labels: labels, datasets:[{label:'Users', data:data, backgroundColor: colors}] },
+    options: { responsive:true, animation:{duration:800} }
+});
+
+// Line Chart
+const lineChart = new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: { labels: labels, datasets:[{label:'Users', data:data, borderColor:'#1e3c72', backgroundColor:'rgba(30,60,114,0.3)', fill:true}] },
+    options: { responsive:true, animation:{duration:800} }
+});
+
+// Polar Area Chart
+const polarChart = new Chart(document.getElementById('polarChart'), {
+    type: 'polarArea',
+    data: { labels: labels, datasets:[{data:data, backgroundColor: colors}] },
+    options: { responsive:true, animation:{animateRotate:true,animateScale:true} }
+});
+
+// Radar Chart
+const radarChart = new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: { labels: labels, datasets:[{label:'Users', data:data, backgroundColor:'rgba(40,167,69,0.4)', borderColor:'#28a745'}] },
+    options: { responsive:true, animation:{duration:800} }
+});
+</script>
+
+</body>
+</html>
