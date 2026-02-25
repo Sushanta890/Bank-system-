@@ -4,53 +4,34 @@
 <title>S.K Card Login</title>
 <style>
 body{
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     background: linear-gradient(135deg,#1e90ff,#00c6ff);
     display:flex;
     justify-content:center;
     align-items:center;
     height:100vh;
-    margin:0;
 }
-
 .container{
-    background:#fff;
+    background:white;
     padding:25px;
     border-radius:12px;
     width:350px;
     box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
-
-h2{
-    text-align:center;
-}
-
 input{
     width:100%;
     padding:10px;
-    margin:10px 0;
-    border-radius:6px;
-    border:1px solid #ccc;
+    margin:8px 0;
 }
-
 button{
     width:100%;
     padding:12px;
-    border:none;
     background:#1e90ff;
     color:white;
-    font-size:16px;
-    border-radius:6px;
-    cursor:pointer;
+    border:none;
 }
-
-button:hover{
-    background:#0d6efd;
-}
-
-.profile{
+.result{
     margin-top:15px;
-    font-size:18px;
     text-align:center;
 }
 </style>
@@ -58,38 +39,41 @@ button:hover{
 <body>
 
 <div class="container">
-    <h2>S.K Card Login</h2>
+<h2>S.K Login</h2>
 
-    <input type="text" id="skNumber" placeholder="Enter S.K Number">
+<input type="email" id="loginEmail" placeholder="Enter Email ID">
+<input type="password" id="loginPassword" placeholder="Enter Password">
 
-    <button onclick="login()">Login</button>
+<button onclick="login()">Login</button>
 
-    <div class="profile" id="result"></div>
+<div class="result" id="result"></div>
 </div>
 
 <script>
 function login(){
-    let skNumber = document.getElementById("skNumber").value;
+    let email = document.getElementById("loginEmail").value;
+    let password = document.getElementById("loginPassword").value;
 
-    if(skNumber === ""){
-        alert("Enter S.K Number");
+    let data = localStorage.getItem(email);
+
+    if(!data){
+        alert("Email not registered");
         return;
     }
 
-    let data = localStorage.getItem(skNumber);
+    let user = JSON.parse(data);
 
-    if(data){
-        let user = JSON.parse(data);
-
-        document.getElementById("result").innerHTML = `
-            <p><b>Full Name:</b> ${user.fullName || (user.firstName + " " + user.lastName)}</p>
-            <p><b>S.K Number:</b> ${user.skCardNumber}</p>
-            <p><b>Date of Birth:</b> ${user.dob}</p>
-        `;
-    } else {
-        document.getElementById("result").innerHTML =
-            "<p style='color:red;'>Invalid S.K Number</p>";
+    if(user.password !== password){
+        alert("Wrong Password");
+        return;
     }
+
+    document.getElementById("result").innerHTML =
+        "<b>Login Successful</b><br><br>" +
+        "Full Name: " + user.firstName + " " + user.lastName + "<br>" +
+        "S.K Number: " + user.skCardNumber + "<br>" +
+        "Date of Birth: " + user.dob + "<br>" +
+        "Email ID: " + user.email;
 }
 </script>
 
