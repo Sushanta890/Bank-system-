@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K Bank Balance Check</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#1e3c72;
+color:white;
+text-align:center;
+padding-top:50px;
+}
+
+.container{
+background:white;
+color:black;
+width:350px;
+margin:auto;
+padding:20px;
+border-radius:12px;
+}
+
+input{
+width:90%;
+padding:10px;
+margin:10px;
+}
+
+button{
+padding:10px;
+background:#1e3c72;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.result{
+margin-top:20px;
+background:#f1f1f1;
+padding:15px;
+border-radius:8px;
+}
+
+</style>
+
+</head>
+<body>
+
+<h2>S.K Bank Balance Check</h2>
+
+<div class="container">
+
+<input type="text" id="account" placeholder="Enter Account Number">
+
+<button onclick="checkBalance()">Check Balance</button>
+
+<div id="result" class="result" style="display:none;"></div>
+
+</div>
+
+
+<script>
+
+function checkBalance(){
+
+let acc=document.getElementById("account").value.trim();
+
+let users=JSON.parse(localStorage.getItem("skUsers"))||[];
+
+let user=users.find(u=>u.account===acc);
+
+let resultDiv=document.getElementById("result");
+
+if(!user){
+
+alert("Account not found");
+
+resultDiv.style.display="none";
+
+return;
+
+}
+
+let fullName=user.fname+" "+user.lname;
+
+let balance=user.balance || 0;
+
+resultDiv.style.display="block";
+
+resultDiv.innerHTML=`
+
+<h3>Account Details</h3>
+
+<p><b>Full Name:</b> ${fullName}</p>
+
+<p><b>Account Number:</b> ${user.account}</p>
+
+<p><b>Balance:</b> ₹${balance}</p>
+
+`;
+
+}
+
+</script>
+
+</body>
+</html>
