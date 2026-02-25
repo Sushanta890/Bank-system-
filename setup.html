@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K Bank Secure Login</title>
+
+<style>
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.box{
+background:white;
+padding:30px;
+border-radius:12px;
+width:320px;
+text-align:center;
+box-shadow:0 0 20px rgba(0,0,0,0.3);
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:15px;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:15px;
+background:#1e3c72;
+color:white;
+border:none;
+font-size:16px;
+cursor:pointer;
+}
+
+.error{
+color:red;
+margin-top:10px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="box">
+
+<h2>S.K Bank Login</h2>
+
+<input type="password" id="password" placeholder="Enter Password">
+
+<button onclick="login()">Login</button>
+
+<div class="error" id="error"></div>
+
+</div>
+
+<script>
+
+// DEFAULT PASSWORD
+const defaultPassword = "Sushanta@5629";
+
+// if already logged in → open profile automatically
+if(localStorage.getItem("sk_login")=="true"){
+window.location.href="professional.html";
+}
+
+function login(){
+
+let inputPass=document.getElementById("password").value;
+
+if(inputPass === defaultPassword){
+
+localStorage.setItem("sk_login","true");
+
+window.location.href="professional.html";
+
+}else{
+
+document.getElementById("error").innerText="Wrong Password";
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

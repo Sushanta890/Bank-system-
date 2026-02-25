@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>S.K Bank Professional Dashboard</title>
+
+<style>
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#11998e,#38ef7d);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.profile{
+background:white;
+padding:30px;
+border-radius:15px;
+width:350px;
+text-align:center;
+box-shadow:0 0 25px rgba(0,0,0,0.3);
+}
+
+h2{
+color:#1e3c72;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:15px;
+background:red;
+color:white;
+border:none;
+cursor:pointer;
+}
+</style>
+
+</head>
+<body>
+
+<div class="profile">
+
+<h2>Welcome Sushanta</h2>
+
+<p>Professional Page Loaded Successfully</p>
+
+<p>Status: <b style="color:green;">Secure Login Active</b></p>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<script>
+
+// check login
+if(localStorage.getItem("sk_login")!="true"){
+window.location.href="login.html";
+}
+
+function logout(){
+
+localStorage.removeItem("sk_login");
+
+window.location.href="login.html";
+
+}
+
+</script>
+
+</body>
+</html>
