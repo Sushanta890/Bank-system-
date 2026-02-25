@@ -1,128 +1,98 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SIM Registration</title>
+<title>S.K SIM Registration</title>
 <style>
 body{
-    font-family:Arial;
-    background:linear-gradient(135deg,#1e90ff,#00c6ff);
+    font-family: Arial;
+    background: linear-gradient(135deg,#1e90ff,#00c6ff);
     display:flex;
     justify-content:center;
     align-items:center;
     height:100vh;
+    margin:0;
 }
-.box{
+.container{
     background:#fff;
     padding:25px;
-    border-radius:10px;
-    width:330px;
+    border-radius:12px;
+    width:350px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
-input,textarea,button{
+input, select{
     width:100%;
     padding:10px;
     margin:8px 0;
 }
 button{
+    width:100%;
+    padding:12px;
     background:#1e90ff;
     color:white;
     border:none;
     cursor:pointer;
 }
-button:hover{background:#0d6efd;}
-.message{
-    font-size:14px;
-}
-.error{color:red;}
-.success{color:green;}
+button:hover{ background:#0d6efd; }
 </style>
 </head>
 <body>
 
-<div class="box">
-<h2>SIM Registration</h2>
+<div class="container">
+<h2>S.K SIM Registration</h2>
 
-<form onsubmit="submitForm(event)">
-<input type="text" id="firstName" placeholder="First Name" required>
-<input type="text" id="lastName" placeholder="Last Name" required>
+<form onsubmit="register(event)">
+<input type="text" id="fullName" placeholder="Full Name" required>
 <input type="date" id="dob" required>
-<textarea id="address" placeholder="Address" required></textarea>
 
-<input type="text" id="skNumber" placeholder="Enter S.K Number (Example: SK2026123456)" required>
-<div class="message" id="skMessage"></div>
+<select id="gender" required>
+<option value="">Select Gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
 
-<button type="submit">Submit</button>
+<input type="text" id="skNumber" placeholder="Enter S.K Card Number" required>
+
+<button type="submit">Register</button>
 </form>
 </div>
 
 <script>
-
-// Validate format: SK + 10 digits
-function validateSK(sk){
-    let pattern = /^SK\d{10}$/;
-    return pattern.test(sk);
+function generateSIM(){
+    return "9" + Math.floor(100000000 + Math.random() * 900000000);
 }
 
-// Check if SK already exists
-function skExists(sk){
-    for(let i=0;i<localStorage.length;i++){
-        let key = localStorage.key(i);
-        let data = JSON.parse(localStorage.getItem(key));
-        if(data && data.skNumber === sk){
-            return true;
-        }
-    }
-    return false;
-}
+function register(e){
+    e.preventDefault();
 
-// Generate EMI & SIM number
-function generateNumber(prefix){
-    return prefix + Math.floor(100000000 + Math.random()*900000000);
-}
+    let users = JSON.parse(localStorage.getItem("users")) || [];
 
-function submitForm(event){
-    event.preventDefault();
+    let skNumber = document.getElementById("skNumber").value;
 
-    let sk = document.getElementById("skNumber").value.trim();
-    let message = document.getElementById("skMessage");
-
-    // 1️⃣ Format check
-    if(!validateSK(sk)){
-        message.innerHTML="Invalid S.K Number Format! (Example: SK2026123456)";
-        message.className="message error";
+    if(users.some(user => user.skCardNumber === skNumber)){
+        alert("S.K Card Number already registered!");
         return;
     }
 
-    // 2️⃣ Duplicate check
-    if(skExists(sk)){
-        message.innerHTML="S.K Number Already Registered!";
-        message.className="message error";
-        return;
-    }
+    let simNumber;
+    do{
+        simNumber = generateSIM();
+    }while(users.some(user => user.simNumber === simNumber));
 
-    message.innerHTML="S.K Number Valid ✔";
-    message.className="message success";
-
-    let emiNumber = generateNumber("EMI");
-    let simNumber = generateNumber("SIM");
-
-    let userData = {
-        firstName:firstName.value,
-        lastName:lastName.value,
-        dob:dob.value,
-        address:address.value,
-        skNumber:sk,
-        emiNumber:emiNumber,
-        simNumber:simNumber,
-        status:"Pending"
+    let newUser = {
+        fullName: document.getElementById("fullName").value,
+        dob: document.getElementById("dob").value,
+        gender: document.getElementById("gender").value,
+        skCardNumber: skNumber,
+        simNumber: simNumber,
+        status: "Pending"
     };
 
-    localStorage.setItem(simNumber, JSON.stringify(userData));
+    users.push(newUser);
+    localStorage.setItem("users", JSON.stringify(users));
 
-    alert("Registration Successful!\nSIM No: "+simNumber);
-
-    window.location.href="home.html";
+    alert("Registration Submitted!\nWaiting for Approval.");
+    document.querySelector("form").reset();
 }
-
 </script>
 
 </body>
