@@ -4,7 +4,6 @@
 <title>S.K Bank Registration</title>
 
 <style>
-
 body{
 font-family:Arial;
 background:linear-gradient(135deg,#1e3c72,#2a5298);
@@ -20,7 +19,6 @@ width:350px;
 margin:auto;
 padding:20px;
 border-radius:12px;
-animation:fade 0.5s ease;
 }
 
 input, select{
@@ -37,14 +35,7 @@ border:none;
 cursor:pointer;
 width:95%;
 }
-
-@keyframes fade{
-from{opacity:0;}
-to{opacity:1;}
-}
-
 </style>
-
 </head>
 <body>
 
@@ -53,9 +44,7 @@ to{opacity:1;}
 <form onsubmit="register(event)">
 
 <input type="text" id="fname" placeholder="First Name" required>
-
 <input type="text" id="lname" placeholder="Last Name" required>
-
 <input type="date" id="dob" required>
 
 <select id="gender" required>
@@ -76,21 +65,37 @@ pattern="[0-9]{10}" required>
 
 <script>
 
-// Generate Account Number
-function generateAccount(){
+// GENERATE UNIQUE ACCOUNT NUMBER
+function generateAccount(users){
 
-return "SK"+Math.floor(100000000 + Math.random()*900000000);
+let account;
+
+do{
+account="SK"+Math.floor(100000000 + Math.random()*900000000);
+}
+while(users.some(u=>u.account===account));
+
+return account;
 
 }
 
-// Generate Customer ID
-function generateCustomerID(){
 
-return "CUST"+Math.floor(10000 + Math.random()*90000);
+// GENERATE UNIQUE CUSTOMER ID
+function generateCustomerID(users){
+
+let customerID;
+
+do{
+customerID="CUST"+Math.floor(10000 + Math.random()*90000);
+}
+while(users.some(u=>u.customerID===customerID));
+
+return customerID;
 
 }
 
-// Register Function
+
+// REGISTER FUNCTION
 function register(e){
 
 e.preventDefault();
@@ -101,7 +106,8 @@ let notifications = JSON.parse(localStorage.getItem("skNotifications")) || [];
 
 let mobile=document.getElementById("mobile").value;
 
-// Duplicate check
+
+// CHECK DUPLICATE MOBILE
 if(users.find(u=>u.mobile===mobile)){
 
 alert("Mobile already registered");
@@ -109,9 +115,14 @@ return;
 
 }
 
-let account=generateAccount();
-let customerID=generateCustomerID();
 
+// GENERATE UNIQUE VALUES
+let account=generateAccount(users);
+
+let customerID=generateCustomerID(users);
+
+
+// CREATE USER
 let user={
 
 fname:fname.value,
@@ -125,47 +136,58 @@ account:account,
 customerID:customerID,
 
 balance:0,
-
 blocked:false,
-
 loanActive:false,
+
+status:"Pending",
 
 created:new Date().toLocaleString()
 
 };
 
-// Save user
+
+// SAVE USER
 users.push(user);
 
-// Save transaction
+
+// SAVE TRANSACTION
 transactions.push({
 
 type:"Account Created",
 account:account,
 amount:0,
+balance:0,
 date:new Date().toLocaleString()
 
 });
 
-// Save notification
+
+// SAVE NOTIFICATION
 notifications.push({
 
-message:"New account created: "+account,
+message:"New account pending approval: "+account,
 date:new Date().toLocaleString()
 
 });
 
+
+// SAVE STORAGE
 localStorage.setItem("skUsers",JSON.stringify(users));
 localStorage.setItem("skTransactions",JSON.stringify(transactions));
 localStorage.setItem("skNotifications",JSON.stringify(notifications));
 
+
+// SUCCESS MESSAGE
 alert(
 "Account Created Successfully\n\n"+
 "Account Number: "+account+"\n"+
-"Customer ID: "+customerID
+"Customer ID: "+customerID+"\n\n"+
+"Status: Pending Approval"
 );
 
-location.href="index.html";
+
+// REDIRECT
+location.href="home.html";
 
 }
 

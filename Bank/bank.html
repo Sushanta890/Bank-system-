@@ -20,6 +20,7 @@ margin:auto;
 padding:20px;
 border-radius:10px;
 margin-top:20px;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
 }
 
 button{
@@ -30,10 +31,19 @@ color:white;
 border:none;
 cursor:pointer;
 width:200px;
+border-radius:5px;
+}
+
+button:hover{
+background:#2a5298;
 }
 
 .logout{
 background:#dc2626;
+}
+
+.logout:hover{
+background:#ef4444;
 }
 
 .history{
@@ -47,6 +57,7 @@ margin-top:20px;
 text-align:left;
 max-height:300px;
 overflow:auto;
+box-shadow:0 0 10px rgba(0,0,0,0.3);
 }
 
 </style>
@@ -54,7 +65,7 @@ overflow:auto;
 </head>
 <body>
 
-<h2>S.K Bank Dashboard</h2>
+<h2>🏦 S.K Bank Dashboard</h2>
 
 <div class="card" id="profile"></div>
 
@@ -78,24 +89,34 @@ location.href="login.html";
 // LOAD USERS
 let users = JSON.parse(localStorage.getItem("skUsers")) || [];
 
-let current = users.find(u=>u.account===loggedUser.account);
+let current = users.find(u => u.account === loggedUser.account);
 
+if(!current){
+alert("User not found");
+location.href="login.html";
+}
+
+// FIX BALANCE
 if(!current.balance){
-current.balance=0;
+current.balance = 0;
 }
 
 
 // SHOW PROFILE
 function loadProfile(){
 
-document.getElementById("profile").innerHTML=`
+// FIX CUSTOMER ID ISSUE
+let cid = current.customerID || current.customerId || "Not Available";
+
+document.getElementById("profile").innerHTML = `
 
 <b>Name:</b> ${current.fname} ${current.lname}<br>
 <b>Gender:</b> ${current.gender}<br>
 <b>DOB:</b> ${current.dob}<br>
 <b>Email:</b> ${current.email}<br>
-<b>Account:</b> ${current.account}<br>
-<b>Customer ID:</b> ${current.customerId}<br>
+<b>Mobile:</b> ${current.mobile}<br>
+<b>Account Number:</b> ${current.account}<br>
+<b>Customer ID:</b> ${cid}<br>
 <b>Balance:</b> ₹${current.balance}
 
 `;
@@ -112,12 +133,12 @@ if(!receiverAcc) return;
 
 let amount = parseFloat(prompt("Enter Amount"));
 
-if(isNaN(amount) || amount<=0){
+if(isNaN(amount) || amount <= 0){
 alert("Invalid amount");
 return;
 }
 
-let receiver = users.find(u=>u.account===receiverAcc);
+let receiver = users.find(u => u.account === receiverAcc);
 
 if(!receiver){
 alert("Receiver account not found");
@@ -134,14 +155,14 @@ return;
 current.balance -= amount;
 
 if(!receiver.balance){
-receiver.balance=0;
+receiver.balance = 0;
 }
 
 receiver.balance += amount;
 
 
 // SAVE USERS
-localStorage.setItem("skUsers",JSON.stringify(users));
+localStorage.setItem("skUsers", JSON.stringify(users));
 
 
 // SAVE TRANSACTIONS
@@ -165,7 +186,7 @@ from: current.account,
 date: new Date().toLocaleString()
 });
 
-localStorage.setItem("skTransactions",JSON.stringify(transactions));
+localStorage.setItem("skTransactions", JSON.stringify(transactions));
 
 
 alert("Transfer Successful");
@@ -176,25 +197,24 @@ showHistory();
 }
 
 
-
-// SHOW HISTORY AUTO
+// SHOW HISTORY
 function showHistory(){
 
 let transactions = JSON.parse(localStorage.getItem("skTransactions")) || [];
 
-let html="<h3>Your Transactions</h3>";
+let html = "<h3>Your Transactions</h3>";
 
-let userTransactions = transactions.filter(t=>t.account===current.account);
+let userTransactions = transactions.filter(t => t.account === current.account);
 
-if(userTransactions.length===0){
+if(userTransactions.length === 0){
 
-html+="No transactions found";
+html += "No transactions found";
 
 }else{
 
-userTransactions.reverse().forEach(t=>{
+userTransactions.slice().reverse().forEach(t => {
 
-html+=`
+html += `
 
 <b>Type:</b> ${t.type}<br>
 <b>Amount:</b> ₹${t.amount}<br>
@@ -208,12 +228,12 @@ html+=`
 
 }
 
-document.getElementById("history").innerHTML=html;
+document.getElementById("history").innerHTML = html;
 
 }
 
 
-// LOGOUT FUNCTION
+// LOGOUT
 function logout(){
 
 localStorage.removeItem("loggedUser");

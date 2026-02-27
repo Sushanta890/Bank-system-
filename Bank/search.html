@@ -1,42 +1,115 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>S.K Bank Mobile Search</title>
     <style>
-        body { font-family: Arial; background: #141e30; color: white; text-align: center; padding-top: 50px; }
-        .box { background: white; color: black; width: 350px; margin: auto; padding: 20px; border-radius: 12px; }
-        input { width: 90%; padding: 8px; margin: 8px 0; }
-        button { padding: 10px 15px; background: #243b55; color: white; border: none; cursor: pointer; }
-        .result { margin-top: 15px; font-weight: bold; color: green; }
+        body {
+            font-family: Arial;
+            background: #141e30;
+            color: white;
+            text-align: center;
+            padding-top: 50px;
+        }
+        
+        .box {
+            background: white;
+            color: black;
+            width: 350px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 8px 0;
+        }
+        
+        button {
+            padding: 10px 15px;
+            background: #243b55;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #1e2f45;
+        }
+        
+        .result {
+            margin-top: 15px;
+            font-weight: bold;
+            color: green;
+        }
+        
+        .error {
+            color: red;
+        }
     </style>
 </head>
+
 <body>
-
-<h2>S.K Bank Mobile Search</h2>
-
-<div class="box">
-    <input type="text" id="mobileInput" placeholder="Enter Mobile Number"><br>
-    <button onclick="searchByMobile()">Search</button>
-    <div class="result" id="result"></div>
-</div>
-
-<script>
-function searchByMobile(){
-    const users = JSON.parse(localStorage.getItem("skUsers")) || [];
-    const mobile = document.getElementById("mobileInput").value.trim();
-    const user = users.find(u => u.mobile===mobile);
-
-    if(!user){
-        document.getElementById("result").innerHTML = "Mobile number not found!";
-    } else if(user.status !== "Approved"){
-        document.getElementById("result").innerHTML = "Account not approved yet!";
-    } else {
-        document.getElementById("result").innerHTML =
-            `S.K Account Number: <b>${user.account}</b><br>` +
-            `Customer ID: <b>${user.customerId}</b>`;
-    }
-}
-</script>
-
+    
+    <h2>🏦 S.K Bank Mobile Search</h2>
+    
+    <div class="box">
+        
+        <input type="text" id="mobileInput" placeholder="Enter Mobile Number">
+        
+        <button onclick="searchByMobile()">Search</button>
+        
+        <div id="result"></div>
+        
+    </div>
+    
+    <script>
+        function searchByMobile() {
+            
+            const users = JSON.parse(localStorage.getItem("skUsers")) || [];
+            
+            const mobile = document.getElementById("mobileInput").value.trim();
+            
+            const resultDiv = document.getElementById("result");
+            
+            if (mobile === "") {
+                resultDiv.innerHTML = "<span class='error'>Please enter mobile number</span>";
+                return;
+            }
+            
+            const user = users.find(u => u.mobile === mobile);
+            
+            if (!user) {
+                
+                resultDiv.innerHTML =
+                    "<span class='error'>Mobile number not found!</span>";
+                
+                return;
+            }
+            
+            if (user.status !== "Approved") {
+                
+                resultDiv.innerHTML =
+                    "<span class='error'>Account not approved yet!</span>";
+                
+                return;
+            }
+            
+            // FIX CUSTOMER ID CASE ISSUE
+            const customerID = user.customerID || user.customerId || "Not Available";
+            
+            resultDiv.innerHTML = `
+        Account Number: <b>${user.account}</b><br>
+        Customer ID: <b>${customerID}</b><br>
+        Name: <b>${user.fname} ${user.lname}</b><br>
+        Balance: <b>₹${user.balance}</b>
+    `;
+            
+        }
+    </script>
+    
 </body>
+
 </html>

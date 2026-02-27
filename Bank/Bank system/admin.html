@@ -1,211 +1,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>S.K Bank Admin Approval</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: Arial; 
-            background: #243b55; 
-            color: white; 
-            text-align: center; 
-            padding: 20px; 
-        }
+<title>S.K Bank Admin Approval</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{
+font-family:Arial;
+background:#243b55;
+color:white;
+text-align:center;
+padding:20px;
+}
 
-        table {
-            width: 95%; 
-            margin: auto; 
-            border-collapse: collapse; 
-            color: black; 
-            background: white; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            margin-bottom: 40px;
-            animation: fadeIn 1s ease-in;
-        }
+table{
+width:95%;
+margin:auto;
+border-collapse:collapse;
+background:white;
+color:black;
+}
 
-        th, td {
-            padding: 10px; 
-            border: 1px solid black; 
-            text-align: center;
-            transition: background 0.3s, color 0.3s;
-        }
+th,td{
+padding:10px;
+border:1px solid black;
+}
 
-        th {
-            background: #1e3c72; 
-            color: white;
-        }
+th{
+background:#1e3c72;
+color:white;
+}
 
-        button {
-            padding: 5px 10px; 
-            background: #1e3c72; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            border-radius: 6px;
-            transition: transform 0.2s, background 0.3s;
-        }
-
-        button:hover {
-            transform: scale(1.1);
-            background: #4a6fa5;
-        }
-
-        tr.approved {
-            background: #d4edda;
-            color: #155724;
-            animation: glow 1s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px #28a745; }
-            50% { box-shadow: 0 0 15px #28a745; }
-            100% { box-shadow: 0 0 5px #28a745; }
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-20px);}
-            100% { opacity: 1; transform: translateY(0);}
-        }
-
-        #chartContainer {
-            width: 45%;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            color: black;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            margin-bottom: 40px;
-            animation: chartFade 1s ease-in;
-        }
-
-        @keyframes chartFade {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        #dateTime {
-            margin-bottom: 20px;
-            font-weight: bold;
-            font-size: 1.1em;
-            animation: timePulse 2s infinite;
-        }
-
-        @keyframes timePulse {
-            0% { color: white; }
-            50% { color: #ffc107; }
-            100% { color: white; }
-        }
-    </style>
+button{
+padding:6px 12px;
+background:#1e3c72;
+color:white;
+border:none;
+cursor:pointer;
+}
+</style>
 </head>
+
 <body>
+
 <h2>Admin Approval Dashboard</h2>
 
-<div id="dateTime"></div>
-
-<div id="chartContainer">
-    <canvas id="approvalChart"></canvas>
-</div>
-
 <table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Account Number</th>
-            <th>Customer ID</th>
-            <th>Status</th>
-            <th>Approved At</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="userTable"></tbody>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Mobile</th>
+<th>Account Number</th>
+<th>Customer ID</th>
+<th>Status</th>
+<th>Approved At</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="userTable"></tbody>
+
 </table>
 
 <script>
-let approvalChart; // global chart variable
 
 function loadUsers(){
-    const users = JSON.parse(localStorage.getItem("skUsers")) || [];
-    const tbody = document.getElementById("userTable");
-    tbody.innerHTML = "";
 
-    users.forEach((u,i)=>{
-        const row = document.createElement("tr");
-        if(u.status === "Approved") row.classList.add("approved");
+let users=JSON.parse(localStorage.getItem("skUsers"))||[];
 
-        row.innerHTML = `
-            <td>${u.fname} ${u.lname}</td>
-            <td>${u.mobile}</td>
-            <td>${u.account}</td>
-            <td>${u.customerId}</td>
-            <td>${u.status}</td>
-            <td>${u.approvedAt ? u.approvedAt : "-"}</td>
-            <td>${u.status==="Pending"?`<button onclick="approve(${i})">Approve</button>`:"✅"}</td>
-        `;
-        tbody.appendChild(row);
-    });
+let tbody=document.getElementById("userTable");
 
-    updateChart(users);
-    updateDateTime();
+tbody.innerHTML="";
+
+users.forEach((u,i)=>{
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${u.fname} ${u.lname}</td>
+
+<td>${u.mobile}</td>
+
+<td>${u.account}</td>
+
+<td>${u.customerID}</td>
+
+<td>${u.status}</td>
+
+<td>${u.approvedAt || "-"}</td>
+
+<td>
+
+${u.status==="Pending"?
+`<button onclick="approve(${i})">Approve</button>`:
+"Approved"}
+
+</td>
+
+</tr>
+
+`;
+
+});
+
 }
+
 
 function approve(index){
-    let users = JSON.parse(localStorage.getItem("skUsers"));
-    users[index].status = "Approved";
-    users[index].approvedAt = new Date().toLocaleString();
-    localStorage.setItem("skUsers", JSON.stringify(users));
-    loadUsers();
-}
 
-function updateChart(users){
-    const approvedCount = users.filter(u=>u.status==="Approved").length;
-    const pendingCount = users.filter(u=>u.status==="Pending").length;
+let users=JSON.parse(localStorage.getItem("skUsers"));
 
-    const data = [approvedCount, pendingCount];
+users[index].status="Approved";
 
-    const ctx = document.getElementById('approvalChart').getContext('2d');
+users[index].approvedAt=new Date().toLocaleString();
 
-    if(!approvalChart){
-        // create new chart
-        approvalChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Approved', 'Pending'],
-                datasets: [{
-                    data: data,
-                    backgroundColor: ['#28a745', '#ffc107']
-                }]
-            },
-            options: {
-                responsive: true,
-                animation: {
-                    animateRotate: true,
-                    animateScale: true,
-                    duration: 800
-                },
-                plugins: {
-                    legend: { position: 'bottom' },
-                    title: { display: true, text: 'Approval Status' }
-                }
-            }
-        });
-    } else {
-        // update existing chart with animation
-        approvalChart.data.datasets[0].data = data;
-        approvalChart.update({duration: 800, easing: 'easeOutBounce'});
-    }
-}
-
-function updateDateTime(){
-    const now = new Date();
-    document.getElementById("dateTime").innerText = "Current Date & Time: " + now.toLocaleString();
-}
-
-// update time every second
-setInterval(updateDateTime, 1000);
+localStorage.setItem("skUsers",JSON.stringify(users));
 
 loadUsers();
+
+}
+
+
+loadUsers();
+
 </script>
 
 </body>
