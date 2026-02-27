@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Loan Apply</title>
+</head>
+<body>
+
+<h2>Loan Apply</h2>
+
+<input id="account" placeholder="Account Number"><br>
+<input id="mobile" placeholder="Mobile"><br>
+
+<select id="amount">
+<option>100</option>
+<option>500</option>
+<option>1000</option>
+<option>5000</option>
+<option>10000</option>
+<option>50000</option>
+<option>100000</option>
+</select><br>
+
+<select id="interest">
+<option value="5">5%</option>
+<option value="10">10%</option>
+<option value="15">15%</option>
+<option value="20">20%</option>
+<option value="35">35%</option>
+<option value="50">50%</option>
+</select><br>
+
+<select id="duration">
+<option>Daily</option>
+<option>Weekly</option>
+<option>Monthly</option>
+<option>Yearly</option>
+</select><br>
+
+<button onclick="applyLoan()">Apply</button>
+
+<script>
+
+function applyLoan(){
+
+let users=JSON.parse(localStorage.getItem("skUsers"))||[];
+let loans=JSON.parse(localStorage.getItem("skLoans"))||[];
+let notes=JSON.parse(localStorage.getItem("skNotifications"))||[];
+
+let account=document.getElementById("account").value;
+let mobile=document.getElementById("mobile").value;
+let amount=document.getElementById("amount").value;
+let interest=document.getElementById("interest").value;
+let duration=document.getElementById("duration").value;
+
+let user=users.find(u=>u.account==account && u.mobile==mobile);
+
+if(!user){alert("Invalid account");return;}
+
+let total=amount*(1+interest/100);
+
+loans.push({
+account,
+amount:Number(amount),
+interest:Number(interest),
+duration,
+total,
+status:"Pending"
+});
+
+notes.push({
+message:"Loan request sent: "+account,
+date:new Date().toLocaleString()
+});
+
+localStorage.setItem("skLoans",JSON.stringify(loans));
+localStorage.setItem("skNotifications",JSON.stringify(notes));
+
+alert("Loan request sent");
+
+}
+
+</script>
+
+</body>
+</html>

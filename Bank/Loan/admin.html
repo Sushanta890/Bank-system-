@@ -1,53 +1,70 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Admin Panel</title>
 
-<style>
-
-body{
-font-family:Arial;
-background:#1e3c72;
-color:white;
-text-align:center;
-}
-
-table{
-background:white;
-color:black;
-margin:auto;
-border-collapse:collapse;
-}
-
-td,th{
-padding:10px;
-border:1px solid black;
-}
-
-button{
-padding:5px;
-}
-
-</style>
-</head>
 <body>
+  
+  <h2>Admin Panel</h2>
+  
+  <div id="loans"></div>
+  
+  <script>
+    let loans = JSON.parse(localStorage.getItem("skLoans")) || [];
+    let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+    let tx = JSON.parse(localStorage.getItem("skTransactions")) || [];
+    let notes = JSON.parse(localStorage.getItem("skNotifications")) || [];
+    
+    let html = "";
+    
+    loans.forEach((loan, i) => {
+      
+      html += `
+Account:${loan.account}
+Amount:${loan.amount}
+Status:${loan.status}
 
-<h2>Admin Loan Approval</h2>
-
-<table id="table">
-
-<tr>
-<th>Account</th>
-<th>Amount</th>
-<th>Interest</th>
-<th>Total</th>
-<th>Status</th>
-<th>Approve</th>
-</tr>
-
-</table>
-
-<script src="system.js"></script>
-
+<button onclick="approve(${i})">Approve</button>
+<button onclick="reject(${i})">Reject</button>
+<br><hr>
+`;
+      
+    });
+    
+    loansDiv.innerHTML = html;
+    
+    function approve(i) {
+      
+      loans[i].status = "Approved";
+      
+      tx.push({
+        type: "Loan",
+        account: loans[i].account,
+        amount: loans[i].amount
+      });
+      
+      notes.push({
+        message: "Loan approved:" + loans[i].account,
+        date: new Date().toLocaleString()
+      });
+      
+      localStorage.setItem("skLoans", JSON.stringify(loans));
+      localStorage.setItem("skTransactions", JSON.stringify(tx));
+      localStorage.setItem("skNotifications", JSON.stringify(notes));
+      
+      location.reload();
+      
+    }
+    
+    function reject(i) {
+      
+      loans[i].status = "Rejected";
+      
+      localStorage.setItem("skLoans", JSON.stringify(loans));
+      
+      location.reload();
+      
+    }
+  </script>
+  
 </body>
+
 </html>

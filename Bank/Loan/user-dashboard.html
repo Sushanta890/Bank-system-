@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+  
+  <h2>User Dashboard</h2>
+  
+  <input id="account" placeholder="Account Number">
+  <button onclick="load()">Load</button>
+  
+  <div id="info"></div>
+  
+  <script>
+    function load() {
+      
+      let account = document.getElementById("account").value;
+      
+      let users = JSON.parse(localStorage.getItem("skUsers")) || [];
+      let loans = JSON.parse(localStorage.getItem("skLoans")) || [];
+      
+      let user = users.find(u => u.account == account);
+      
+      if (!user) { alert("Not found"); return; }
+      
+      let loan = loans.find(l => l.account == account);
+      
+      document.getElementById("info").innerHTML =
+        `
+Name:${user.fname}<br>
+Balance:${user.balance}<br>
+Status:${user.blocked?"BANNED":"ACTIVE"}<br>
+Loan:${loan?loan.status:"None"}
+`;
+      
+    }
+  </script>
+  
+</body>
+
+</html>

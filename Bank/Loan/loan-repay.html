@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+  
+  <input id="account" placeholder="Account">
+  <input id="amount" placeholder="Amount">
+  
+  <button onclick="repay()">Repay</button>
+  
+  <script>
+    function repay() {
+      
+      let repay = JSON.parse(localStorage.getItem("skRepayments")) || [];
+      
+      repay.push({
+        account: account.value,
+        amount: amount.value,
+        status: "Pending"
+      });
+      
+      localStorage.setItem("skRepayments", JSON.stringify(repay));
+      
+      alert("Repayment request sent");
+      
+    }
+  </script>
+  
+</body>
+
+</html>
