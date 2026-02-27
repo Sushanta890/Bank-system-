@@ -1,66 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>S.K Bank Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S.K Bank - Home</title>
+
 <style>
 body{
-font-family:Arial;
-background:linear-gradient(135deg,#1e3c72,#2a5298);
-color:white;
-text-align:center;
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(to right,#00c6ff,#0072ff);
+    color:white;
+    text-align:center;
 }
-.box{
-background:white;
-color:black;
-padding:15px;
-margin:15px;
-border-radius:10px;
-width:350px;
-margin:auto;
+
+/* Header */
+header{
+    background:rgba(0,0,0,0.3);
+    padding:20px;
+    font-size:28px;
+    font-weight:bold;
+    letter-spacing:2px;
 }
-a{
-display:block;
-margin:10px;
-padding:10px;
-background:#1e3c72;
-color:white;
-text-decoration:none;
-border-radius:5px;
+
+/* Card */
+.container{
+    margin-top:40px;
+}
+
+.card{
+    background:white;
+    color:black;
+    margin:20px auto;
+    padding:20px;
+    width:90%;
+    max-width:400px;
+    border-radius:15px;
+    box-shadow:0 0 15px rgba(0,0,0,0.3);
+    animation:fadeIn 1s;
+}
+
+/* Buttons */
+button{
+    width:100%;
+    padding:15px;
+    margin:10px 0;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    background:linear-gradient(to right,#0072ff,#00c6ff);
+    color:white;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+/* Footer */
+footer{
+    margin-top:40px;
+    padding:10px;
+    background:rgba(0,0,0,0.3);
+}
+
+/* Animation */
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(20px);}
+    to{opacity:1; transform:translateY(0);}
 }
 </style>
+
 </head>
 <body>
 
-<h1>S.K Bank</h1>
+<header>
+🏦 S.K BANK
+</header>
 
-<div class="box">
+<div class="container">
 
-<a href="register.html">Register</a>
-<a href="loan.html">Apply Loan</a>
-<a href="user-dashboard.html">User Dashboard</a>
-<a href="loan-repay.html">Loan Repayment</a>
-<a href="transfer.html">Transfer Money</a>
-<a href="admin.html">Admin Panel</a>
+<div class="card">
+<h2>Welcome to S.K Bank</h2>
+
+<button onclick="openPage('registration.html')">Open Account</button>
+
+<button onclick="openPage('Bank balance transaction/Balance Check.html')">Balance Check</button>
+
+<button onclick="openPage('login.html')">Login</button>
+
+<button onclick="openPage('search.html')">Search Account number</button>
+
+<button onclick="openPage('Bank system/pie chart.html')">Pie Chart</button>
+<button onclick="openPage('Loan/home.html')">Loan</button>
+</div>
 
 </div>
 
-<div class="box">
-<h3>Notifications</h3>
-<div id="notifications"></div>
-</div>
+<footer>
+© 2026 S.K Bank | Secure Banking System
+</footer>
 
 <script>
-
-let notes=JSON.parse(localStorage.getItem("skNotifications"))||[];
-
-let html="";
-
-notes.forEach(n=>{
-html+=n.message+"<br>"+n.date+"<br><hr>";
-});
-
-document.getElementById("notifications").innerHTML=html;
-
+function openPage(page){
+    window.location.href = page;
+}
 </script>
 
 </body>
