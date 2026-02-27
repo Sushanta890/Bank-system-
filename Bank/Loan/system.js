@@ -1,16 +1,17 @@
 
-// Load data
+// LOAD DATABASE
+
 let users=JSON.parse(localStorage.getItem("skUsers"))||[];
 let loans=JSON.parse(localStorage.getItem("skLoans"))||[];
-let transactions=JSON.parse(localStorage.getItem("skTx"))||[];
+let tx=JSON.parse(localStorage.getItem("skTx"))||[];
 
 
-// LOGIN SYSTEM
+// LOGIN
 
 function login(){
 
-let acc=document.getElementById("account").value;
-let mob=document.getElementById("mobile").value;
+let acc=account.value;
+let mob=mobile.value;
 
 let user=users.find(u=>u.account==acc && u.mobile==mob);
 
@@ -21,7 +22,9 @@ localStorage.setItem("currentUser",acc);
 location="bank.html";
 
 }else{
-alert("Invalid Login");
+
+alert("Invalid login");
+
 }
 
 }
@@ -31,7 +34,7 @@ alert("Invalid Login");
 
 function adminLogin(){
 
-let pass=prompt("Enter Admin Password");
+let pass=prompt("Password");
 
 if(pass=="admin123"){
 
@@ -42,7 +45,7 @@ location="admin.html";
 }
 
 
-// LOAD USER INFO
+// DASHBOARD
 
 if(location.pathname.includes("bank.html")){
 
@@ -50,17 +53,117 @@ let acc=localStorage.getItem("currentUser");
 
 let user=users.find(u=>u.account==acc);
 
-document.getElementById("info").innerHTML=`
+info.innerHTML=
 
-Account: ${user.account}<br>
-Balance: ₹${user.balance||0}
-
-`;
+`Account: ${user.account}<br>
+Balance: ₹${user.balance||0}`;
 
 }
 
 
-// EMI AUTO DEDUCT
+// APPLY LOAN
+
+function applyLoan(){
+
+let acc=localStorage.getItem("currentUser");
+
+let amount=parseFloat(loanAmount.value);
+
+let interest=parseFloat(loanInterest.value);
+
+let months=parseInt(loanMonths.value);
+
+let total=amount+(amount*interest/100);
+
+let emi=total/months;
+
+let loan={
+
+account:acc,
+
+amount:amount,
+
+interest:interest,
+
+total:total,
+
+emi:emi,
+
+months:months,
+
+paid:0,
+
+status:"Pending"
+
+};
+
+loans.push(loan);
+
+localStorage.setItem("skLoans",JSON.stringify(loans));
+
+alert("Loan Applied");
+
+}
+
+
+// ADMIN PANEL
+
+if(location.pathname.includes("admin.html")){
+
+loans.forEach((loan,i)=>{
+
+let row=table.insertRow();
+
+row.insertCell(0).innerText=loan.account;
+row.insertCell(1).innerText=loan.amount;
+row.insertCell(2).innerText=loan.interest;
+row.insertCell(3).innerText=loan.total;
+row.insertCell(4).innerText=loan.status;
+
+let btn=row.insertCell(5);
+
+let approve=document.createElement("button");
+
+approve.innerText="Approve";
+
+approve.onclick=function(){
+
+loan.status="Approved";
+
+let user=users.find(u=>u.account==loan.account);
+
+user.balance=(user.balance||0)+loan.amount;
+
+tx.push({
+
+date:new Date().toLocaleString(),
+
+type:"Loan Credit",
+
+amount:loan.amount,
+
+balance:user.balance,
+
+account:loan.account
+
+});
+
+localStorage.setItem("skUsers",JSON.stringify(users));
+localStorage.setItem("skLoans",JSON.stringify(loans));
+localStorage.setItem("skTx",JSON.stringify(tx));
+
+location.reload();
+
+};
+
+btn.appendChild(approve);
+
+});
+
+}
+
+
+// EMI PAYMENT
 
 function payEMI(){
 
@@ -68,38 +171,45 @@ let acc=localStorage.getItem("currentUser");
 
 let user=users.find(u=>u.account==acc);
 
-let loan=loans.find(l=>l.account==acc && l.status=="Approved");
+let loan=loans.find(l=>l.account==acc && l.status=="Approved" && l.paid<l.total);
 
-if(!loan){alert("No loan"); return;}
+if(!loan){
 
-let emi=loan.total/loan.months;
+alert("No loan");
 
-if(user.balance<emi){
+return;
+
+}
+
+if(user.balance<loan.emi){
 
 alert("Insufficient balance");
 
 return;
+
 }
 
-user.balance-=emi;
+user.balance-=loan.emi;
 
-loan.paid=(loan.paid||0)+emi;
+loan.paid+=loan.emi;
 
-// transaction history
-
-transactions.push({
+tx.push({
 
 date:new Date().toLocaleString(),
+
 type:"EMI Paid",
-amount:emi,
+
+amount:loan.emi,
+
 balance:user.balance,
+
 account:acc
 
 });
 
 localStorage.setItem("skUsers",JSON.stringify(users));
 localStorage.setItem("skLoans",JSON.stringify(loans));
-localStorage.setItem("skTx",JSON.stringify(transactions));
+localStorage.setItem("skTx",JSON.stringify(tx));
 
 alert("EMI Paid");
 
@@ -120,63 +230,18 @@ if(location.pathname.includes("passbook.html")){
 
 let acc=localStorage.getItem("currentUser");
 
-let table=document.getElementById("passbook");
+tx.forEach(t=>{
 
-transactions.forEach(tx=>{
+if(t.account==acc){
 
-if(tx.account==acc){
+let row=passbook.insertRow();
 
-let row=table.insertRow();
-
-row.insertCell(0).innerText=tx.date;
-row.insertCell(1).innerText=tx.type;
-row.insertCell(2).innerText=tx.amount;
-row.insertCell(3).innerText=tx.balance;
+row.insertCell(0).innerText=t.date;
+row.insertCell(1).innerText=t.type;
+row.insertCell(2).innerText=t.amount;
+row.insertCell(3).innerText=t.balance;
 
 }
-
-});
-
-}
-
-
-// ADMIN PANEL CONTROL
-
-if(location.pathname.includes("admin.html")){
-
-let table=document.getElementById("table");
-
-loans.forEach((loan,index)=>{
-
-let row=table.insertRow();
-
-row.insertCell(0).innerText=loan.account;
-row.insertCell(1).innerText=loan.amount;
-row.insertCell(2).innerText=loan.interest;
-row.insertCell(3).innerText=loan.status;
-
-let btn=row.insertCell(4);
-
-let approve=document.createElement("button");
-
-approve.innerText="Approve";
-
-approve.onclick=function(){
-
-loan.status="Approved";
-
-let user=users.find(u=>u.account==loan.account);
-
-user.balance+=loan.amount;
-
-localStorage.setItem("skUsers",JSON.stringify(users));
-localStorage.setItem("skLoans",JSON.stringify(loans));
-
-location.reload();
-
-};
-
-btn.appendChild(approve);
 
 });
 

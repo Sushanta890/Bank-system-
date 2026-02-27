@@ -3,22 +3,29 @@
 <head>
 <title>S.K Bank Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{
 font-family:Arial;
 background:linear-gradient(135deg,#1e3c72,#00c6ff);
-color:white;
-text-align:center;
-padding-top:100px;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
 .box{
 background:white;
-color:black;
-padding:20px;
-width:300px;
-margin:auto;
+padding:25px;
 border-radius:15px;
+width:320px;
+text-align:center;
+animation:fade 1s;
+}
+
+@keyframes fade{
+from{opacity:0; transform:translateY(30px);}
+to{opacity:1;}
 }
 
 input,button{
@@ -31,21 +38,23 @@ button{
 background:#1e3c72;
 color:white;
 border:none;
+cursor:pointer;
 }
 </style>
 </head>
 <body>
 
 <div class="box">
+
 <h2>S.K Bank Login</h2>
 
-<input type="text" id="account" placeholder="Account Number">
+<input id="account" placeholder="Account Number">
 
-<input type="text" id="mobile" placeholder="Mobile Number">
+<input id="mobile" placeholder="Mobile Number">
 
 <button onclick="login()">Login</button>
 
-<button onclick="adminLogin()">Admin Login</button>
+<button onclick="adminLogin()">Admin</button>
 
 </div>
 
