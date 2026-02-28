@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Home</title>
+</head>
+
+<body>
+  
+  <h1 id="welcome"></h1>
+  
+  <button onclick="logout()">Logout</button>
+  
+  <script>
+    let mobile = localStorage.getItem("login")
+    
+    if (!mobile) {
+      
+      window.location = "login.html"
+      
+    }
+    
+    let name = localStorage.getItem(mobile)
+    
+    document.getElementById("welcome").innerHTML =
+      "Welcome " + name
+    
+    function logout() {
+      
+      localStorage.removeItem("login")
+      
+      window.location = "login.html"
+      
+    }
+  </script>
+  
+</body>
+
+</html>

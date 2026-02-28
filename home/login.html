@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+
+<style>
+body{
+font-family:Arial;
+text-align:center;
+margin-top:100px;
+}
+
+input,button{
+padding:10px;
+margin:10px;
+}
+
+</style>
+
+</head>
+<body>
+
+<h2>Login</h2>
+
+<input type="number" id="mobile" placeholder="Enter Mobile Number">
+<br>
+<button onclick="login()">Login</button>
+
+<p id="msg"></p>
+
+<script>
+
+function login(){
+
+let mobile = document.getElementById("mobile").value
+
+let name = localStorage.getItem(mobile)
+
+if(name){
+
+localStorage.setItem("login", mobile)
+
+window.location="home.html"
+
+}
+else{
+
+document.getElementById("msg").innerHTML="Mobile number not registered"
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

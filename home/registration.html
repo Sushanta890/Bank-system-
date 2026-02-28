@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+
+<style>
+body{
+font-family: Arial;
+background:#f0f8ff;
+text-align:center;
+margin-top:100px;
+}
+
+form{
+background:white;
+padding:20px;
+display:inline-block;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+input{
+display:block;
+margin:10px;
+padding:10px;
+width:200px;
+}
+
+button{
+padding:10px;
+background:blue;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Registration</h2>
+
+<form id="form">
+<input type="text" id="name" placeholder="Full Name" required>
+<input type="number" id="mobile" placeholder="Mobile Number" required>
+<button type="submit">Register</button>
+</form>
+
+<p id="msg"></p>
+
+<script>
+
+const scriptURL = "https://script.google.com/macros/s/AKfycbyiBMp59-O0OomtV5BNvwioDX5smyIhuUSMJdSSLFEKv7gKFzRrnMJm8fb9xgue7I4H/exec"
+
+document.getElementById("form").addEventListener("submit", function(e){
+
+e.preventDefault()
+
+let name = document.getElementById("name").value
+let mobile = document.getElementById("mobile").value
+
+// Check already registered
+if(localStorage.getItem(mobile)){
+document.getElementById("msg").innerHTML="Already registered"
+return
+}
+
+// Save to Google Sheets
+fetch(scriptURL, {
+method:"POST",
+body:new URLSearchParams({
+"Full Name":name,
+"Mobile Number":mobile
+})
+})
+
+.then(res=>res.json())
+.then(data=>{
+
+// Save local
+localStorage.setItem(mobile, name)
+
+document.getElementById("msg").innerHTML="Registration Success"
+
+setTimeout(()=>{
+window.location="login.html"
+},1000)
+
+})
+
+})
+
+</script>
+
+</body>
+</html>
